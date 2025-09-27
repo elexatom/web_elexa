@@ -1,0 +1,19 @@
+{
+    "name": "elexa/web_konference",
+    "description": "Semestralni prace",
+    "type": "project",
+    "require": {
+        "twig/twig": "^3.21"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Tomáš Elexa",
+            "email": "elexa@students.zcu.cz"
+        }
+    ]
+}
