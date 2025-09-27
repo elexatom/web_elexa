@@ -2,6 +2,7 @@
     "name": "elexa/web_konference",
     "description": "Semestralni prace",
     "type": "project",
+    "license": "MIT",
     "require": {
         "twig/twig": "^3.21"
     },
