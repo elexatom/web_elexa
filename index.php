@@ -1,31 +1,21 @@
 <?php
 
 use App\Controllers\RouterCtrl;
+use App\Models\Db;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 require __DIR__ . '/vendor/autoload.php';
 mb_internal_encoding("UTF-8");
 
-$smerovac = new RouterCtrl();
-$smerovac->process([$_SERVER['REQUEST_URI']]);
+session_start();
 
-?>
+// Twig setup
+$loader = new FilesystemLoader(__DIR__ . '/templates');
+$twig = new Environment($loader, ['cache' => false, 'debug' => true]);
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konference</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-</head>
+Db::connect("127.0.0.1", "dbadmin", "Zcu2025@", 'webdata');
 
-<body>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
-        crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"
-        integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y"
-        crossorigin="anonymous"></script>
-</body>
-</html>
+$router = new RouterCtrl($twig);
+$router->process([$_SERVER['REQUEST_URI']]);
+$router->writeView();

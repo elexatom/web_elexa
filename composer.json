@@ -1,20 +1,21 @@
 {
-    "name": "elexa/web_konference",
-    "description": "Semestralni prace",
-    "type": "project",
-    "license": "MIT",
-    "require": {
-        "twig/twig": "^3.21"
-    },
-    "autoload": {
-        "psr-4": {
-            "App\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Tomáš Elexa",
-            "email": "elexa@students.zcu.cz"
-        }
-    ]
+  "name": "elexa/web_konference",
+  "description": "Semestralni prace",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "twig/twig": "^3.21",
+    "ext-pdo": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Tomáš Elexa",
+      "email": "elexa@students.zcu.cz"
+    }
+  ]
 }
