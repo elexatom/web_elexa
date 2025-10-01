@@ -1,0 +1,25 @@
+{% extends 'layout_auth.twig' %}
+
+
+{% block content %}
+    <section class="flex flex-col justify-center items-center -mt-32">
+        <a href="/">
+            <h1 class="absolute top-6 left-5 md:top-auto md:left-auto md:relative mb-5 font-bold text-base-content text-2xl md:text-4xl">
+                ForumSladkéSny</h1>
+        </a>
+        <div class="card w-96 bg-base-100 md:shadow-xl p-6">
+            <div>
+                <h2 class="text-2xl font-bold mb-4 flex">🎉 Vítejte!</h2>
+            </div>
+
+            <p class="text-base-content">Váš účet byl úspěšně založen. <br/> Nyní musíte počkat, až Váš účet
+                bude <b>schválen</b>.</p>
+            <p class="text-base-content">O tomto budete informováni emailem.</p>
+
+
+            <p class="text-lg mt-4">Přejít na
+                <a href="/" class="link link-primary">domovskou stránku</a>
+            </p>
+        </div>
+    </section>
+{% endblock %}

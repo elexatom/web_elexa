@@ -1,0 +1,165 @@
+{% extends 'layout_auth.twig' %}
+
+
+{% block content %}
+    <section class="flex flex-col justify-center items-center">
+        <a href="/">
+            <h1 class="absolute top-6 left-5 md:top-auto md:left-auto md:relative mb-5 font-bold text-base-content text-2xl md:text-4xl">
+                ForumSladkéSny</h1>
+        </a>
+        <div class="card w-96 bg-base-100 md:shadow-xl p-6">
+            <h2 class="text-2xl font-bold mb-4">Registrace</h2>
+
+            {% if error %}
+                <div class="alert alert-error mb-4">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form method="post" action="/auth/register" class="space-y-4">
+                <div>
+                    <span class="label-text">Celé jméno</span>
+                    <label class="input validator form-control w-full">
+                        <i data-lucide="circle-user-round" class="h-[1em] opacity-50"></i>
+                        <input
+                                value="{{ form.username|default('') }}"
+                                name="username"
+                                type="text"
+                                required
+                                placeholder="Jméno"
+                                pattern="[A-Za-z]*\s[A-Za-z]*"
+                                minlength="3"
+                                title="Jen písmena"
+                        />
+                    </label>
+                    <p class="validator-hint hidden">
+                        Neplatné jméno
+                    </p>
+                </div>
+
+                <div>
+                    <span class="label-text">Nick</span>
+                    <label class="input validator form-control w-full">
+                        <i data-lucide="user" class="h-[1em] opacity-50"></i>
+                        <input
+                                name="nick"
+                                type="text"
+                                required
+                                value="{{ form.nick|default('') }}"
+                                placeholder="Nick"
+                                pattern="[A-Za-z][A-Za-z0-9\-]*"
+                                minlength="5"
+                                maxlength="15"
+                                title="Jen písmena, čísla nebo -"
+                        />
+                    </label>
+                    <p class="validator-hint hidden">
+                        Mezi 5 a 15 znaky
+                        <br/>Jen písmena, čísla nebo -
+                    </p>
+                </div>
+
+                <div>
+                    <label for="email" class="label-text">Email</label>
+                    <label class="input validator form-control w-full">
+                        <i data-lucide="mail" class="h-[1em] opacity-50"></i>
+                        <input name="email" id="email" type="email" value="{{ form.email|default('') }}"
+                               placeholder="mail@site.com" required title="Prosím zadejte email."/>
+                    </label>
+                    <div class="validator-hint hidden">Zadejte platný email</div>
+                </div>
+
+
+                {# Password field #}
+                <div>
+                    <label for="password">Heslo</label>
+                    <div class="relative w-full">
+                        <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                required
+                                placeholder="Heslo"
+                                minlength="8"
+                                class="input input-bordered w-full pr-10"
+                                aria-describedby="passwordHelp"
+                        />
+                        <button
+                                type="button"
+                                id="togglePassword"
+                                class="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                aria-label="Zobrazit heslo"
+                        >
+                            <i data-lucide="eye" class="w-5 h-5" id="eyeIcon"></i>
+                        </button>
+                    </div>
+
+                    <!-- strength bar -->
+                    <div class="w-full bg-base-200 rounded-md h-2 mt-3 overflow-hidden" aria-hidden="true">
+                        <div id="strengthFill" class="h-2 rounded-md transition-all" style="width:0"></div>
+                    </div>
+
+                    <p id="passwordHelp" class="text-xs mt-2 text-gray-500">Silné heslo obsahuje min. 8 znaků, velké
+                        písmeno, malé písmeno, číslo a speciální znak.</p>
+
+                    <!-- requirements checklist -->
+                    <ul id="pwdRequirements" class="mt-3 space-y-1 text-sm">
+                        <li class="flex items-center gap-2" data-require="length">
+                            <i data-lucide="x" class="reqIcon h-5 w-5"></i>
+                            <span>Minimálně 8 znaků</span>
+                        </li>
+
+                        <li class="flex items-center gap-2" data-require="lower">
+                            <i data-lucide="x" class="reqIcon h-5 w-5"></i>
+                            <span>Malé písmeno</span>
+                        </li>
+
+                        <li class="flex items-center gap-2" data-require="upper">
+                            <i data-lucide="x" class="reqIcon h-5 w-5"></i>
+                            <span>Velké písmeno</span>
+                        </li>
+
+                        <li class="flex items-center gap-2" data-require="number">
+                            <i data-lucide="x" class="reqIcon h-5 w-5"></i>
+                            <span>Číslo</span>
+                        </li>
+
+                        <li class="flex items-center gap-2" data-require="special">
+                            <i data-lucide="x" class="reqIcon h-5 w-5"></i>
+                            <span>Speciální znak (např. !@#$%)</span>
+                        </li>
+                    </ul>
+                </div>
+
+                {# Confirm password #}
+                <div class="mt-4">
+                    <div class="relative">
+                        <label for="confirmPassword">Zopakujte heslo</label>
+                        <input id="confirmPassword" name="confirm_password" type="password" required
+                               placeholder="Zopakujte heslo" class="input input-bordered w-full pr-12"/>
+                    </div>
+                    <p id="confirmHint" class="text-xs mt-2 text-gray-500"></p>
+                </div>
+
+                {% if errors %}
+                    <div class="alert alert-error mb-4">
+                        <ul class="list-disc pl-5">
+                            {% for err in errors %}
+                                <li>{{ err }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <button class="btn btn-primary w-full text-white" type="submit" disabled="disabled">Odeslat</button>
+            </form>
+
+            <p class="text-sm mt-4">Už máte účet?
+                <a href="/auth/login" class="link link-primary">Přihlásit se</a>
+            </p>
+        </div>
+    </section>
+
+
+    <script src="/templates/scripts/register.js"></script>
+{% endblock %}

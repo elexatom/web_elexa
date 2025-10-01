@@ -16,6 +16,16 @@ $twig = new Environment($loader, ['cache' => false, 'debug' => true]);
 
 Db::connect("127.0.0.1", "dbadmin", "Zcu2025@", 'webdata');
 
+$uri = $_SERVER['REQUEST_URI'];
+
+// normalize url - /auth/ -> /auth
+if ($uri !== '/' && str_ends_with($uri, '/')) {
+    $newUri = rtrim($uri, '/');
+    header("Location: $newUri");
+    exit;
+}
+
+
 $router = new RouterCtrl($twig);
 $router->process([$_SERVER['REQUEST_URI']]);
 $router->writeView();
