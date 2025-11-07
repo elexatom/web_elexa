@@ -35,13 +35,13 @@
             </ul>
         </div>
         <div class="flex-1 cursor-default">
-            <a class="font-bold text-2xl">Fórum Jméno</a>
+            <a class="font-bold text-2xl ml-4">Forum DigiArch</a>
         </div>
     </div>
     <div class="navbar-center hidden lg:flex">
         <ul class="menu menu-horizontal px-1">
-            <li><a>Item 1</a></li>
-            <li><a>Item 2</a></li>
+            <li><a href="/users">uzivatele</a></li>
+            <li><a href="/articles">moje clanky</a></li>
             <li><a>Item 3</a></li>
         </ul>
     </div>
@@ -67,30 +67,35 @@
                         d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/>
             </svg>
         </label>
-        <div class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
-                <div class="w-10 rounded-full">
-                    <img
-                            alt="profile picture"
-                            src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"/>
+
+        {% if user is defined and user %}
+            {# User is logged in - show dropdown #}
+            <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                    <div class="w-10 rounded-full">
+                        <img alt="profile picture"
+                             src="{{ user.profile_picture|default('/public/uploads/profiles/default.jpg') }}"
+                        />
+                    </div>
                 </div>
+                <ul tabindex="0"
+                    class="menu menu-sm dropdown-content bg-base-300 border rounded-box z-1 mt-5 w-32 p-2 shadow-lg text-base-content">
+                    <li>
+                        <a class="justify-between text-sm" href="/profile">
+                            Váš Profil
+                        </a>
+                    </li>
+                    <li><a href="/auth/logout" class="text-sm text-error">Odhlásit se</a></li>
+                </ul>
             </div>
-            <ul tabindex="0"
-                class="menu menu-sm dropdown-content bg-base-300 rounded-box z-1 mt-5 w-52 p-2 shadow-lg text-base-content">
-                <li>
-                    <a class="justify-between">
-                        Profile
-                        <span class="badge">New</span>
-                    </a>
-                </li>
-                <li><a>Settings</a></li>
-                <li><a>Logout</a></li>
-            </ul>
-        </div>
+        {% else %}
+            {# User is not logged in - show login button #}
+            <a href="/auth" class="btn btn-primary text-white">Login</a>
+        {% endif %}
     </div>
 </header>
 
-<main class="flex-grow">
+<main class="flex-grow md:bg-base-200">
     {% block content %}{% endblock %}
 </main>
 
@@ -100,7 +105,7 @@
 
             <!-- Brand / About -->
             <div>
-                <h2 class="text-xl font-bold">ForumSladkeSny</h2>
+                <h2 class="text-xl font-bold">Forum DigiArch</h2>
                 <p class="mt-2 text-sm">
                     A short description about your site, company, or project.
                     Keep it simple and clean.
@@ -131,10 +136,18 @@
         </div>
 
         <div class="mt-8 pt-6 text-center text-xs text-gray-300">
-            © 2025 ForumSladkeSny. All rights reserved.
+            © 2025 Forum DigiArch. All rights reserved.
         </div>
     </div>
 </footer>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script>
+    lucide.createIcons()
+</script>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
 </body>
 

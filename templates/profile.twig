@@ -1,0 +1,276 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+    <section class="container mx-auto px-4 py-8 max-w-4xl">
+        <h1 class="text-3xl font-bold mb-6">Profil</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Notifikace -->
+            <div class="toast hidden" id="messageToast">
+                <div class="alert alert-success shadow-lg">
+                    <span id="messageText"></span>
+                </div>
+            </div>
+
+            <!-- Left Column: Profile Picture & Basic Info -->
+            <div class="lg:col-span-1">
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body items-center text-center">
+                        <div class="avatar">
+                            <div class="w-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                                <img src="{{ user.profile_picture|default('/public/uploads/profiles/default.jpg') }}"
+                                     alt="Profile picture" id="profilePreview"/>
+                            </div>
+                        </div>
+
+                        <h2 id="jmeno" class="card-title mt-4">{{ user.jmeno }}</h2>
+                        <p id="nick" class="text-sm opacity-70">@{{ user.nick }}</p>
+
+                        <!-- Upload Profile Picture -->
+                        <div class="w-full mt-4" id="uploadForm">
+                            <input type="file" name="profile_picture" id="profilePictureInput"
+                                   accept="image/jpeg,image/png,image/jpg,image/webp"
+                                   class="file-input file-input-bordered file-input-sm w-full"/>
+                            <button id="photoSubmitBtn" class="btn btn-primary btn-sm w-full mt-2 mb-2 text-white">
+                                <i data-lucide="upload" class="h-4 w-4"></i>
+                                Nahrát foto
+                            </button>
+                            <span class="text-xs text-gray-400"> max. 10 MB, JPG, JPEG, PNG, WEBP</span>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <!-- User Info -->
+                        <div class="w-full text-left space-y-2">
+                            <div class="flex items-center gap-2 text-sm">
+                                <i data-lucide="mail" class="h-4 w-4 opacity-70"></i>
+                                <span class="opacity-70">{{ user.email }}</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm">
+                                <i data-lucide="star" class="h-4 w-4 opacity-70"></i>
+                                <span class="opacity-70 uppercase">{{ user.role }}</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm">
+                                <i data-lucide="hash" class="h-4 w-4 opacity-70"></i>
+                                <span class="opacity-70">ID: {{ user.userid }}</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm">
+                                <i data-lucide="calendar" class="h-4 w-4 opacity-70"></i>
+                                <span class="opacity-70">Vytvořeno: {{ user.datum_vytvoreni|date('d.m.Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--- pravy sloupec - upravy -------------------------------------------->
+            <div class="lg:col-span-2 space-y-6">
+                <!------------------------------------------------------------------->
+                <!---------------------------- Upravit Jmeno ------------------------>
+                <!------------------------------------------------------------------->
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <i data-lucide="user" class="h-5 w-5"></i>
+                            Upravit jméno
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="label" for="username">
+                                    <span class="label-text">Celé jméno</span>
+                                </label>
+                                <input
+                                        class="input validator form-control w-full"
+                                        name="username"
+                                        id="username"
+                                        type="text"
+                                        required
+                                        value="{{ user.jmeno }}"
+                                        placeholder="Jméno"
+                                        pattern="[A-Za-z]*\s[A-Za-z]*"
+                                        minlength="3"
+                                />
+                                <p class="validator-hint hidden text-error text-sm mt-1">
+                                    Neplatné jméno
+                                </p>
+                            </div>
+                            <button id="submitName" class="btn btn-primary text-white">
+                                <i data-lucide="save" class="h-4 w-4"></i>
+                                Uložit jméno
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!------------------------------------------------------------------->
+                <!---------------------------- Upravit Nick ------------------------->
+                <!------------------------------------------------------------------->
+
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <i data-lucide="at-sign" class="h-5 w-5"></i>
+                            Upravit nickname
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="label" for="nickname">
+                                    <span class="label-text">Nick</span>
+                                </label>
+                                <input
+                                        class="input validator form-control w-full"
+                                        name="nickname"
+                                        id="nickname"
+                                        type="text"
+                                        required
+                                        value="{{ user.nick }}"
+                                        placeholder="Nick"
+                                        pattern="[A-Za-z][A-Za-z0-9\-]*"
+                                        minlength="5"
+                                        maxlength="15"
+                                />
+                                <p class="validator-hint hidden text-error text-sm mt-1">
+                                    Mezi 5 a 15 znaky. Jen písmena, čísla nebo -
+                                </p>
+                            </div>
+                            <button id="submitNick" class="btn btn-primary text-white">
+                                <i data-lucide="save" class="h-4 w-4"></i>
+                                Uložit nick
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!------------------------------------------------------------------->
+                <!--------------------------- Změnit Heslo -------------------------->
+                <!------------------------------------------------------------------->
+
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <i data-lucide="key" class="h-5 w-5"></i>
+                            Změnit heslo
+                        </h3>
+                        <div class="space-y-4" id="passwordForm">
+
+                            <!-- Současné heslo -->
+                            <div>
+                                <label class="label" for="currPwd">
+                                    <span class="label-text">Současné heslo</span>
+                                </label>
+                                <div class="relative">
+                                    <input
+                                            name="currPwd"
+                                            id="currPwd"
+                                            type="password"
+                                            required
+                                            placeholder="Současné heslo"
+                                            class="input input-bordered w-full pr-10"
+                                    />
+                                    <button
+                                            type="button"
+                                            class="togglePwd absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    >
+                                        <i data-lucide="eye" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Nové heslo -->
+                            <div>
+                                <label class="label" for="newPwd">
+                                    <span class="label-text bg-orange">Nové heslo</span>
+                                </label>
+                                <div class="relative">
+                                    <input
+                                            id="newPwd"
+                                            name="newPwd"
+                                            type="password"
+                                            required
+                                            placeholder="Nové heslo"
+                                            minlength="8"
+                                            class="input input-bordered w-full pr-10"
+                                    />
+                                    <button
+                                            type="button"
+                                            class="togglePwd absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    >
+                                        <i data-lucide="eye" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Progress bar -->
+                                <div class="w-full bg-base-200 rounded-md h-2 mt-3 overflow-hidden">
+                                    <div id="strengthFill" class="h-2 rounded-md transition-all" style="width:0"></div>
+                                </div>
+
+                                <p class="text-xs mt-2 text-gray-500">
+                                    Silné heslo obsahuje min. 8 znaků, velké písmeno, malé písmeno, číslo a speciální
+                                    znak.
+                                </p>
+
+                                <!-- Checklist pozadavku -->
+                                <ul id="pwdRequirements" class="mt-3 space-y-1 text-sm">
+                                    <li class="flex items-center gap-2" data-require="length">
+                                        <i data-lucide="x" class="reqIcon h-5 w-5"></i>
+                                        <span>Minimálně 8 znaků</span>
+                                    </li>
+                                    <li class="flex items-center gap-2" data-require="lower">
+                                        <i data-lucide="x" class="reqIcon h-5 w-5"></i>
+                                        <span>Malé písmeno</span>
+                                    </li>
+                                    <li class="flex items-center gap-2" data-require="upper">
+                                        <i data-lucide="x" class="reqIcon h-5 w-5"></i>
+                                        <span>Velké písmeno</span>
+                                    </li>
+                                    <li class="flex items-center gap-2" data-require="number">
+                                        <i data-lucide="x" class="reqIcon h-5 w-5"></i>
+                                        <span>Číslo</span>
+                                    </li>
+                                    <li class="flex items-center gap-2" data-require="special">
+                                        <i data-lucide="x" class="reqIcon h-5 w-5"></i>
+                                        <span>Speciální znak (např. !@#$%)</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Potvrdit nové heslo -->
+                            <div>
+                                <label class="label" for="confirmPwd">
+                                    <span class="label-text">Potvrďte nové heslo</span>
+                                </label>
+                                <div class="relative">
+                                    <input
+                                            id="confirmPwd"
+                                            name="confirmPwd"
+                                            type="password"
+                                            required
+                                            placeholder="Zopakujte nové heslo"
+                                            class="input input-bordered w-full pr-10"
+                                    />
+                                    <button
+                                            type="button"
+                                            class="togglePwd absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    >
+                                        <i data-lucide="eye" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                                <p id="confirmHint" class="text-xs mt-2 text-gray-500"></p>
+                            </div>
+
+                            <button class="btn btn-primary text-white" disabled id="submitPwd">
+                                <i data-lucide="save" class="h-4 w-4"></i>
+                                Změnit heslo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="/templates/scripts/profile.js"></script>
+{% endblock %}

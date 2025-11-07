@@ -30,7 +30,11 @@ abstract class Controller
         $context = array_merge($this->data, ['header' => $this->header]);
 
         if (!empty($this->view)) {
-            echo $this->twig->render($this->view . '.twig', $context);
+            try {
+                echo $this->twig->render($this->view . '.twig', $context);
+            } catch (SyntaxError | RuntimeError | LoaderError) {
+                $this->redirect('/notFound');
+            }
         }
     }
 
@@ -39,5 +43,38 @@ abstract class Controller
         header("Location: $url");
         header("Connection: close");
         exit;
+    }
+
+    protected function jsonResponse(array $data, int $statusCode = 200): never
+    {
+        http_response_code($statusCode);
+        header('Content-Type: application/json');
+        echo json_encode($data);
+        exit;
+    }
+
+
+// bot added --------------------------
+        protected function isAjaxRequest(): bool
+        {
+            return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+                   strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+        }
+
+
+// ------------------------------
+    protected function setFlashMessage(string $type, string $message): void
+    {
+        if (!isset($_SESSION['flash'])) {
+            $_SESSION['flash'] = [];
+        }
+        $_SESSION['flash'][$type] = $message;
+    }
+
+    protected function getFlashMessages(): array
+    {
+        $messages = $_SESSION['flash'] ?? [];
+        unset($_SESSION['flash']);
+        return $messages;
     }
 }

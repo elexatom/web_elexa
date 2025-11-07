@@ -13,9 +13,11 @@ class HomeCtrl extends Controller
         $usrMngr = new UserManager();
         $users = $usrMngr->getAllUsers();
         //print_r($users);
-        $this->header['title'] = "Home | Forum Jméno"; // hlavicka stranky
+        $this->header['title'] = "Forum DigiArch"; // hlavicka stranky
         $this->view = 'home'; // sablona
         $this->data['recentArticles'] = $users;
+        $this->data['user'] = $_SESSION['user'] ?? ''; // data o uzivateli
+
             /*[
             // TODO: tady to musi dolezt z DB
             /*

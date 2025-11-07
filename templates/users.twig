@@ -1,0 +1,215 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+    <section class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Správa uživatelů</h1>
+            <div class="badge badge-primary text-white badge-lg">{{ users|length }} uživatelů</div>
+        </div>
+
+        <!-- Toast notifikace -->
+        <div class="toast hidden" id="messageToast">
+            <div class="alert alert-success shadow-lg">
+                <span id="messageText"></span>
+            </div>
+        </div>
+
+
+        <!-- Responzivni tabulka -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body p-0">
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra w-full" id="usersTable">
+                        <thead>
+                        <tr>
+                            <th class="text-center cursor-pointer hover:bg-base-200 transition-colors sortable"
+                                data-column="userid">
+                                <div class="flex items-center justify-center gap-2">
+                                    ID
+                                    <i data-lucide="arrow-up-down" class="w-4 h-4 sort-icon"></i>
+                                </div>
+                            </th>
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors sortable"
+                                data-column="jmeno">
+                                <div class="flex items-center gap-2">
+                                    Jméno
+                                    <i data-lucide="arrow-up-down" class="w-4 h-4 sort-icon"></i>
+                                </div>
+                            </th>
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors sortable"
+                                data-column="role">
+                                <div class="flex items-center gap-2">
+                                    Role
+                                    <i data-lucide="arrow-up-down" class="w-4 h-4 sort-icon"></i>
+                                </div>
+                            </th>
+                            <th class="text-center cursor-pointer hover:bg-base-200 transition-colors sortable"
+                                data-column="schvaleno">
+                                <div class="flex items-center justify-center gap-2">
+                                    Status účtu
+                                    <i data-lucide="arrow-up-down" class="w-4 h-4 sort-icon"></i>
+                                </div>
+                            </th>
+                            <th class="text-center">Akce</th>
+                        </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                        {% for user in users %}
+                            <tr class="hover" data-user-id="{{ user.userid }}"
+                                data-jmeno="{{ user.jmeno }}"
+                                data-role="{{ user.role }}"
+                                data-schvaleno="{{ user.schvaleno }}">
+                                <!-- ID -->
+                                <td class="text-center font-mono text-sm">{{ user.userid }}</td>
+
+                                <!-- Jmeno -->
+                                <td>
+                                    <div class="flex items-center gap-3">
+                                        <div class="avatar">
+                                            <div class="w-10 h-10 rounded-full">
+                                                <img src="{{ user.profile_picture|default('/public/uploads/profiles/default.jpg') }}"
+                                                     alt="{{ user.jmeno }}"/>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold">{{ user.jmeno }}</div>
+                                            <div class="text-sm opacity-50">@{{ user.nick }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Role select -->
+                                {% if user_incontrol.role == 'admin' and (user.role == 'admin' or user.role == 'superadmin') %}
+                                    <td><p class="text-base-content font-bold capitalize">{{ user.role }}</p></td>
+                                {% elseif user_incontrol.role == user.role %}
+                                    <td><p class="text-base-content font-bold capitalize">{{ user.role }}</p></td>
+                                {% else %}
+                                    <td>
+                                        <label for="select-role-{{ user.userid }}" aria-label="Vyber role"></label>
+                                        <select class="select select-bordered select-sm w-28 max-w-xs role-select"
+                                                data-user-id="{{ user.userid }}"
+                                                data-original-role="{{ user.role }}"
+                                                id="select-role-{{ user.userid }}">
+                                            <option value="autor" {% if user.role == 'user' %}selected{% endif %}>
+                                                Autor
+                                            </option>
+                                            {% if user_incontrol.role == 'superadmin' %}
+                                                <option value="admin"
+                                                        {% if user.role == 'admin' %}selected{% endif %}>
+                                                    Admin
+                                                </option>
+                                            {% endif %}
+                                            <option value="recenzent"
+                                                    {% if user.role == 'recenzent' %}selected{% endif %}>
+                                                Recenzent
+                                            </option>
+                                        </select>
+                                    </td>
+                                {% endif %}
+
+                                <!-- Schvaleno/Neschvaleno status -->
+                                <td class="text-center">
+                                    {% if user.schvaleno == 1 %}
+                                        <button class="btn btn-success btn-sm gap-2 status-toggle"
+                                                data-user-id="{{ user.userid }}"
+                                                data-schvaleno="1">
+                                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                            Schváleno
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-error btn-sm gap-2 status-toggle"
+                                                data-user-id="{{ user.userid }}"
+                                                data-schvaleno="0">
+                                            <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                            Neschváleno
+                                        </button>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Info ikona -->
+                                <td class="text-center">
+                                    <button class="btn btn-ghost btn-sm btn-circle user-info-btn"
+                                            data-user-id="{{ user.userid }}"
+                                            data-email="{{ user.email }}"
+                                            data-name="{{ user.jmeno }}"
+                                            data-nick="{{ user.nick }}"
+                                            data-profile="{{ user.profile_picture|default('/public/uploads/profiles/default.jpg') }}"
+                                            data-created="{{ user.datum_vytvoreni }}"
+                                            data-role="{{ user.role }}">
+                                        <i data-lucide="info" class="w-5 h-5"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal pro info -->
+        <dialog id="userInfoModal" class="modal">
+            <div class="modal-box">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
+                <h3 class="font-bold text-lg mb-4">Detaily uživatele</h3>
+
+                <div class="flex flex-col items-center gap-4">
+                    <!-- Profilova fotka -->
+                    <div class="avatar">
+                        <div class="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                            <img id="modalProfilePic" src="" alt="Profile"/>
+                        </div>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="w-full space-y-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="user" class="w-5 h-5 opacity-70"></i>
+                            <span class="font-semibold">Jméno:</span>
+                            <span id="modalName"></span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="at-sign" class="w-5 h-5 opacity-70"></i>
+                            <span class="font-semibold">Nick:</span>
+                            <span id="modalNick"></span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="mail" class="w-5 h-5 opacity-70"></i>
+                            <span class="font-semibold">Email:</span>
+                            <a id="modalEmail" href="" class="link link-primary"></a>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="shield" class="w-5 h-5 opacity-70"></i>
+                            <span class="font-semibold">Role:</span>
+                            <span id="modalRole" class="badge badge-primary"></span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="calendar" class="w-5 h-5 opacity-70"></i>
+                            <span class="font-semibold">Vytvořeno:</span>
+                            <span id="modalCreated"></span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="hash" class="w-5 h-5 opacity-70"></i>
+                            <span class="font-semibold">ID:</span>
+                            <span id="modalUserId" class="font-mono"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+    </section>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="/templates/scripts/users.js"></script>
+{% endblock %}

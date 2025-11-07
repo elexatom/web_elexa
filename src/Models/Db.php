@@ -25,9 +25,9 @@ class Db
 
     public static function query(string $sql, array $params = [], bool $onlyOne = false): array|bool
     {
-        $out = self::$connection->prepare($sql);
-        $out->execute($params);
-        return $onlyOne ? $out->fetch() : $out->fetchAll();
+        $output = self::$connection->prepare($sql);
+        $output->execute($params);
+        return $onlyOne ? $output->fetch() : $output->fetchAll();
     }
 
 

@@ -1,0 +1,424 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+    {% set total = articles|length %}
+    {% set pending = 0 %}
+    {% set accepted = 0 %}
+    {% set denied = 0 %}
+
+    {% for a in articles %}
+        {% if a.status == 'cekajici' %}
+            {% set pending = pending + 1 %}
+        {% elseif a.status == 'prijato' %}
+            {% set accepted = accepted + 1 %}
+        {% elseif a.status == 'zamitnuto' %}
+            {% set denied = denied + 1 %}
+        {% endif %}
+    {% endfor %}
+
+    <div>
+        <section class="container mx-auto px-4 py-8">
+            <!-- Hlavicka -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold">Moje články</h1>
+                    <p class="text-sm opacity-70 mt-1">Správa vašich publikovaných a recenzovaných článků</p>
+                </div>
+                <button class="btn btn-primary gap-2" onclick="newArticleModal.showModal()">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    Nový článek
+                </button>
+            </div>
+
+            <!-- Toast notifikace -->
+            <div class="toast hidden" id="messageToast">
+                <div class="alert alert-success shadow-lg">
+                    <span id="messageText"></span>
+                </div>
+            </div>
+
+
+            <div role="tablist" class="tabs tabs-boxed mb-6 bg-base-200 p-1">
+                <a role="tab" class="tab tab-active" data-filter="all">
+                    Všechny
+                    <div class="badge badge-sm ml-2">{{ total }}</div>
+                </a>
+                <a role="tab" class="tab" data-filter="cekajici">
+                    Čekající
+                    <div class="badge badge-warning badge-sm ml-2">{{ pending }}</div>
+                </a>
+                <a role="tab" class="tab" data-filter="prijato">
+                    Přijato
+                    <div class="badge badge-success badge-sm ml-2">{{ accepted }}</div>
+                </a>
+                <a role="tab" class="tab" data-filter="zamitnuto">
+                    Zamítnuto
+                    <div class="badge badge-error badge-sm ml-2">{{ denied }}</div>
+                </a>
+            </div>
+
+            <!-- Seznam clanku -->
+            <div class="space-y-8" id="articlesContainer">
+                {% for article in articles %}
+                    <div class="card bg-base-100 shadow-xl article-card" data-status="{{ article.status }}"
+                         data-article-id="{{ article.clanek_id }}">
+                        <div class="card-body">
+                            <div class="flex flex-col lg:flex-row mb-4 gap-4">
+                                <!-- Leva strana - Info -->
+                                <div class="flex-1 space-y-3">
+                                    <!-- Nazev -->
+                                    <div class="flex items-start gap-3">
+                                        <h2 class="card-title text-2xl flex-1" id="title-{{ article.clanek_id }}">
+                                            {{ article.nazev_clanku }}
+                                        </h2>
+                                        {% if article.status == 'prijato' %}
+                                            <div class="badge badge-success gap-1">
+                                                <i data-lucide="check" class="w-3 h-3"></i>
+                                                Přijato
+                                            </div>
+                                        {% elseif article.status == 'zamitnuto' %}
+                                            <div class="badge badge-error gap-1">
+                                                <i data-lucide="x" class="w-3 h-3"></i>
+                                                Zamítnuto
+                                            </div>
+                                        {% else %}
+                                            <div class="badge badge-warning gap-1">
+                                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                                Čeká na recenzi
+                                            </div>
+                                        {% endif %}
+                                        <!-- Prava strana - Akce -->
+                                        <div class="flex gap-2 flex-col">
+                                            <button class="btn btn-sm btn-outline gap-1 flex-1 lg:flex-none edit-article-btn"
+                                                    data-article-id="{{ article.id }}"
+                                                    data-title="{{ article.title }}"
+                                                    data-abstract="{{ article.abstract }}">
+                                                <i data-lucide="edit" class="w-4 h-4"></i>
+                                                Upravit
+                                            </button>
+                                            <button class="btn btn-sm btn-error btn-outline gap-1 flex-1 lg:flex-none delete-article-btn"
+                                                    data-article-id="{{ article.id }}">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                Smazat
+                                            </button>
+                                        </div>
+
+                                    </div>
+
+                                    <!-- Abstrakt -->
+                                    <p class="text-sm opacity-80" id="abstract-{{ article.id }}">
+                                        {{ article.abstrakt }}
+                                    </p>
+
+                                    <!-- Metadata -->
+                                    <div class="flex flex-wrap gap-4 text-sm">
+                                        <div class="flex items-center gap-1 opacity-70">
+                                            <i data-lucide="calendar" class="w-4 h-4"></i>
+                                            <span>{{ article.datum|date('d.m.Y') }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1 opacity-70">
+                                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                                            <a href="{{ article.pdf_odkaz }}" target="_blank"
+                                               class="link link-primary">Zobrazit PDF</a>
+                                        </div>
+                                    </div>
+
+                                    <!-- Recenze a hodnoceni -->
+                                    {% set article_reviews = reviews|filter(r => r.clanek_id == article.clanek_id) %}
+                                    {% if article_reviews|length > 0 %}
+                                        <div class="divider"></div>
+                                        <div class="space-y-2">
+                                            <h3 class="font-semibold flex items-center gap-2">
+                                                <i data-lucide="star" class="w-4 h-4"></i>
+                                                Hodnocení recenzentů ({{ article_reviews|length }})
+                                            </h3>
+
+                                            {% set total_cat1 = 0 %}
+                                            {% set total_cat2 = 0 %}
+                                            {% set total_cat3 = 0 %}
+                                            {% set total_cat4 = 0 %}
+                                            {% for review in article_reviews %}
+                                                {% set total_cat1 = total_cat1 + review.cat1 %}
+                                                {% set total_cat2 = total_cat2 + review.cat2 %}
+                                                {% set total_cat3 = total_cat3 + review.cat3 %}
+                                                {% set total_cat4 = total_cat4 + review.cat4 %}
+                                            {% endfor %}
+                                            {% set count = article_reviews|length %}
+                                            {% set avg_cat1 = (total_cat1 / count)|round(1) %}
+                                            {% set avg_cat2 = (total_cat2 / count)|round(1) %}
+                                            {% set avg_cat3 = (total_cat3 / count)|round(1) %}
+                                            {% set avg_cat4 = (total_cat4 / count)|round(1) %}
+
+                                            <div class="bg-base-200 rounded-lg p-3">
+                                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
+                                                    <div class="flex flex-col items-center">
+                                                        <span class="opacity-70 mb-1">Inovace a originalita</span>
+                                                        <div class="rating rating-sm">
+                                                            {% for i in 1..5 %}
+                                                                <input type="radio" class="mask mask-star-2 bg-warning"
+                                                                       disabled
+                                                                       {% if i <= avg_cat1|round %}checked{% endif %} />
+                                                            {% endfor %}
+                                                        </div>
+                                                        <span class="text-xs mt-1">{{ avg_cat1 }} / 5</span>
+                                                    </div>
+                                                    <div class="flex flex-col items-center">
+                                                        <span class="opacity-70 mb-1">Dopad na udržitelnost</span>
+                                                        <div class="rating rating-sm">
+                                                            {% for i in 1..5 %}
+                                                                <input type="radio" class="mask mask-star-2 bg-warning"
+                                                                       disabled
+                                                                       {% if i <= avg_cat2|round %}checked{% endif %} />
+                                                            {% endfor %}
+                                                        </div>
+                                                        <span class="text-xs mt-1">{{ avg_cat2 }} / 5</span>
+                                                    </div>
+                                                    <div class="flex flex-col items-center">
+                                                        <span class="opacity-70 mb-1">Technická proveditelnost a metodologická kvalita</span>
+                                                        <div class="rating rating-sm">
+                                                            {% for i in 1..5 %}
+                                                                <input type="radio" class="mask mask-star-2 bg-warning"
+                                                                       disabled
+                                                                       {% if i <= avg_cat3|round %}checked{% endif %} />
+                                                            {% endfor %}
+                                                        </div>
+                                                        <span class="text-xs mt-1">{{ avg_cat3 }} / 5</span>
+                                                    </div>
+                                                    <div class="flex flex-col items-center">
+                                                        <span class="opacity-70 mb-1">Kvalita zpracování a srozumitelnost</span>
+                                                        <div class="rating rating-sm">
+                                                            {% for i in 1..5 %}
+                                                                <input type="radio" class="mask mask-star-2 bg-warning"
+                                                                       disabled
+                                                                       {% if i <= avg_cat4|round %}checked{% endif %} />
+                                                            {% endfor %}
+                                                        </div>
+                                                        <span class="text-xs mt-1">{{ avg_cat4 }} / 5</span>
+                                                    </div>
+                                                </div>
+
+                                                <button class="btn btn-sm btn-ghost w-full mt-3"
+                                                        onclick="document.getElementById('reviews-detail-{{ article.clanek_id }}').showModal()">
+                                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                                    Zobrazit detaily recenzí
+                                                </button>
+                                            </div>
+
+                                            <dialog id="reviews-detail-{{ article.clanek_id }}" class="modal">
+                                                <div class="modal-box max-w-3xl">
+                                                    <form method="dialog">
+                                                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                                                            ✕
+                                                        </button>
+                                                    </form>
+                                                    <h3 class="font-bold text-lg mb-4">Detaily recenzí</h3>
+                                                    <div class="space-y-3">
+                                                        {% for review in article_reviews %}
+                                                            <div class="bg-base-200 rounded-lg p-3">
+                                                                <div class="flex justify-between items-start mb-2">
+                                                                    <span class="font-medium text-sm">{{ review.recenzent_jmeno }} (@{{ review.recenzent_nick }})</span>
+                                                                    <span class="text-xs opacity-60">{{ review.datum|date('d.m.Y') }}</span>
+                                                                </div>
+                                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                                                    <div class="flex justify-between items-center">
+                                                                        <span class="opacity-70">Inovace a originalita:</span>
+                                                                        <div class="rating rating-sm">
+                                                                            {% for i in 1..5 %}
+                                                                                <input type="radio"
+                                                                                       class="mask mask-star-2 bg-warning"
+                                                                                       disabled
+                                                                                       {% if i <= review.cat1 %}checked{% endif %} />
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="flex justify-between items-center">
+                                                                        <span class="opacity-70">Dopad na udržitelnost:</span>
+                                                                        <div class="rating rating-sm">
+                                                                            {% for i in 1..5 %}
+                                                                                <input type="radio"
+                                                                                       class="mask mask-star-2 bg-warning"
+                                                                                       disabled
+                                                                                       {% if i <= review.cat2 %}checked{% endif %} />
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="flex justify-between items-center">
+                                                                        <span class="opacity-70">Technická proveditelnost a metodologická kvalita:</span>
+                                                                        <div class="rating rating-sm">
+                                                                            {% for i in 1..5 %}
+                                                                                <input type="radio"
+                                                                                       class="mask mask-star-2 bg-warning"
+                                                                                       disabled
+                                                                                       {% if i <= review.cat3 %}checked{% endif %} />
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="flex justify-between items-center">
+                                                                        <span class="opacity-70">Kvalita zpracování a srozumitelnost:</span>
+                                                                        <div class="rating rating-sm">
+                                                                            {% for i in 1..5 %}
+                                                                                <input type="radio"
+                                                                                       class="mask mask-star-2 bg-warning"
+                                                                                       disabled
+                                                                                       {% if i <= review.cat4 %}checked{% endif %} />
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                {% if review.komentar %}
+                                                                    <div class="mt-2 pt-2 border-t border-base-300">
+                                                                        <p class="text-xs italic opacity-70">
+                                                                            "{{ review.komentar }}"</p>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                                <form method="dialog" class="modal-backdrop">
+                                                    <button>close</button>
+                                                </form>
+                                            </dialog>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Modal - Novy clanek -->
+        <dialog id="newArticleModal" class="modal">
+            <div class="modal-box max-w-2xl">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
+                <h3 class="font-bold text-lg mb-4">Nový článek</h3>
+
+                <form id="newArticleForm" class="space-y-4">
+                    <!-- Nazev -->
+                    <div>
+                        <label class="label" for="newTitle">
+                            <span class="label-text">Název článku *</span>
+                        </label>
+                        <input type="text"
+                               id="newTitle"
+                               name="title"
+                               required
+                               placeholder="Název vašeho článku"
+                               class="input input-bordered w-full"/>
+                    </div>
+
+                    <!-- Abstrakt -->
+                    <div>
+                        <label class="label" for="newAbstract">
+                            <span class="label-text">Abstrakt *</span>
+                        </label>
+                        <textarea id="newAbstract"
+                                  name="abstract"
+                                  required
+                                  rows="5"
+                                  placeholder="Stručný popis článku..."
+                                  class="textarea textarea-bordered w-full"></textarea>
+                    </div>
+
+                    <!-- PDF soubor -->
+                    <div>
+                        <label class="label" for="newPdf">
+                            <span class="label-text">PDF článek *</span>
+                        </label>
+                        <input type="file"
+                               id="newPdf"
+                               name="pdf"
+                               accept="application/pdf"
+                               required
+                               class="file-input file-input-bordered w-full"/>
+                        <label class="label">
+                            <span class="label-text-alt">Maximální velikost: 10 MB</span>
+                        </label>
+                    </div>
+
+                    <!-- Datum publikace -->
+                    <div>
+                        <label class="label" for="newDate">
+                            <span class="label-text">Datum publikace *</span>
+                        </label>
+                        <input type="date"
+                               id="newDate"
+                               name="publish_date"
+                               required
+                               class="input input-bordered w-full"/>
+                    </div>
+
+                    <div class="modal-action">
+                        <button type="button" class="btn btn-ghost" onclick="newArticleModal.close()">Zrušit</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            Vytvořit článek
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+
+        <!-- Modal - Upravit clanek -->
+        <dialog id="editArticleModal" class="modal">
+            <div class="modal-box max-w-2xl">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
+                <h3 class="font-bold text-lg mb-4">Upravit článek</h3>
+
+                <form id="editArticleForm" class="space-y-4">
+                    <input type="hidden" id="editArticleId" name="article_id"/>
+
+                    <!-- Nazev -->
+                    <div>
+                        <label class="label" for="editTitle">
+                            <span class="label-text">Název článku *</span>
+                        </label>
+                        <input type="text"
+                               id="editTitle"
+                               name="title"
+                               required
+                               placeholder="Název vašeho článku"
+                               class="input input-bordered w-full"/>
+                    </div>
+
+                    <!-- Abstrakt -->
+                    <div>
+                        <label class="label" for="editAbstract">
+                            <span class="label-text">Abstrakt *</span>
+                        </label>
+                        <textarea id="editAbstract"
+                                  name="abstract"
+                                  required
+                                  rows="5"
+                                  placeholder="Stručný popis článku..."
+                                  class="textarea textarea-bordered w-full"></textarea>
+                    </div>
+
+                    <div class="modal-action">
+                        <button type="button" class="btn btn-ghost" onclick="editArticleModal.close()">Zrušit</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            Uložit změny
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+                integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+        <script src="/templates/scripts/articles.js"></script>
+    </div>
+{% endblock %}

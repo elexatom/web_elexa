@@ -4,9 +4,10 @@
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "daisyui": "^5.1.24"
   },
   "scripts": {
-    "build:css": "npx @tailwindcss/cli -i style.css -o public/output.css"
+    "build:css": "npx @tailwindcss/cli -i style.css -o public/outputASD.css"
   }
 }

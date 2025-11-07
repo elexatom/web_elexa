@@ -5,7 +5,9 @@
   "license": "MIT",
   "require": {
     "twig/twig": "^3.21",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-fileinfo": "*",
+    "ramsey/uuid": "^4.9"
   },
   "autoload": {
     "psr-4": {

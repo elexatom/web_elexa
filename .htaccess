@@ -1,8 +1,15 @@
 RewriteEngine On
 # RewriteBase /
 Options -Indexes
+
+# pristup k upload
+RewriteCond %{REQUEST_URI} ^/uploads/
+RewriteRule ^ - [L]
+
+# hlavni pravidlo
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule !\.(css|js|icon|zip|rar|png|jpg|gif|pdf)$ index.php [L]
+RewriteRule !\.(css|js|icon|zip|rar|png|jpg|gif|jpeg|webp)$ index.php [L]
+
 
 AddType application/x-httpd-php .php .phtml

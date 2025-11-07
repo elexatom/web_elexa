@@ -36,7 +36,7 @@ class AuthCtrl extends Controller
             $user = $this->userManager->getUserByEmail($email); // ziskat data o uzivateli
 
             if ($user['schvaleno'] === 0) { // ucet ceka na schvaleni, redir. informacni stranka
-                $this->redirect('/auth/verify');
+                $this->redirect('/auth/welcome');
             } elseif ($user && password_verify($password, $user['heslo'])) { // overit credentials
                 session_regenerate_id(); // obnovit session id - session spoofing
                 $_SESSION['user'] = $user; // nastavit session flags
@@ -44,7 +44,10 @@ class AuthCtrl extends Controller
                 $_SESSION['user_id'] = $user['userid'];
                 $_SESSION['loggedin'] = true;
                 $this->redirect('/');
-            } else $this->data['error'] = "Invalid credentials"; // neplatne udaje
+            } else { // neplatne udaje
+                $_SESSION['error'] = "Neplatný email nebo heslo.";
+                $this->redirect('/auth');
+            }
         }
 
         if ($action === 'logout') { // uzivatel se chce odhlasit
@@ -55,6 +58,8 @@ class AuthCtrl extends Controller
         }
 
         if ($action === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST') $this->handleRegister();
+
+        if (isset($_SESSION['error'])) $this->data['error'] = $_SESSION['error']; // aby nedoslo k form resubmitu
 
         $this->header['title'] = "Auth";
         $this->view = $action;
