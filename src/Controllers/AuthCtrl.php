@@ -2,18 +2,8 @@
 
 namespace App\Controllers;
 
-use App\Models\UserManager;
-
 class AuthCtrl extends Controller
 {
-    private UserManager $userManager;
-
-    public function __construct($twig)
-    {
-        parent::__construct($twig);
-        $this->userManager = new UserManager();
-    }
-
     public function process(array $params): void
     {
         $action = $params[0] ?? 'login'; // defaultne login (/auth === /auth/login)

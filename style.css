@@ -3,6 +3,6 @@
 @source "./*.{html,js}";
 @plugin "daisyui" {
 
-    themes: nord --default, dracula --prefersdark;
+    themes: winter --default, dracula --prefersdark;
 
 }

@@ -5,7 +5,7 @@ namespace App\Models;
 use PDOException;
 
 /**
- * Manager dotazu na databazi - Uzivatele
+ * Model - Uzivatele
  */
 class UserManager
 {
@@ -119,5 +119,12 @@ class UserManager
             error_log("DB error in toggleStatus: " . $e->getMessage());
             return false;
         }
+    }
+
+    public function getUsersByRole(string $role): array
+    {
+        return Db::query('
+        SELECT * FROM `uzivatele` WHERE role = ?
+        ', [$role]);
     }
 }

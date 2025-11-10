@@ -5,26 +5,51 @@
         <div class="hero bg-base-200 h-96">
             <div class="hero-content text-center">
                 <div class="max-w-md">
-                    <h1 class="text-5xl font-bold">Hello there</h1>
+                    <h1 class="text-5xl font-bold">Vítejte!</h1>
                     <p class="py-6">
-                        Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem
-                        quasi. In deleniti eaque aut repudiandae et a id nisi.
+                        Objevte svět architektury s DigiArch - Forum kde se špičkové technologie potkávají s designem,
+                        aby vytvořily prostředí pro život zítřka.
                     </p>
-                    <button class="btn btn-primary">Get Started</button>
+                    <a href="/auth/register">
+                        <button class="btn btn-primary">Registrace</button>
+                    </a>
                 </div>
             </div>
         </div>
-        <h1 class="text-base-content text-3xl flex justify-center p-5">Nejnovější články</h1>
-
+        <h1 class="text-base-content text-3xl flex justify-center p-5">Úvod</h1>
         <div class="p-6 justify-center flex">
+            <p class="text-base-content prose lg:prose-xl text-justify">
+                Vítejte na DigiArch!
+
+                Žijeme v době, kdy se stavebnictví a architektura proměňují rychleji než kdy dříve. Od parametrického
+                designu a 3D tisku materiálů až po "digitální dvojčata" celých měst a budovy řízené umělou inteligencí
+                pro
+                optimalizaci spotřeby energií.
+
+                Konference Digitální Stavebnice není jen o technologiích. Je to platforma pro sdílení vizí, jak můžeme
+                pomocí softwaru, dat a inovativních postupů stavět chytřeji, efektivněji a především udržitelněji.
+
+                Spojujeme lídry, inovátory, architekty, softwarové inženýry, urbanisty a výzkumníky, abychom společně
+                definovali budoucnost chytrých a ekologických budov.
+            </p>
+        </div>
+
+        <div class="p-6 justify-center flex items-center mt-12">
+        <h2 class="text-3xl">Články</h2>
+        </div>
+
+        <div class="p-6 justify-center flex items-center mb-12">
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {% for article in recentArticles %}
-                    <div class="card card-dash bg-base-200 w-72">
+                {% for article in articles %}
+                    <div class="card card-dash bg-base-300 w-72">
                         <div class="card-body">
-                            <h2 class="card-title">{{ article.jmeno }}</h2>
-                            <p>{{ article.email }}</p>
+                            <h2 class="card-title">{{ article.nazev_clanku }}</h2>
+                            <span>{{ article.datum }}</span>
+                            <p>{{ article.abstrakt }}</p>
                             <div class="card-actions justify-end">
-                                <button class="btn btn-primary">Buy Now</button>
+                                <a href="{{ article.pdf_odkaz }}" target="_blank" rel="noopener noreferrer">
+                                    <button class="btn btn-primary">Otevřít článek (PDF)</button>
+                                </a>
                             </div>
                         </div>
                     </div>

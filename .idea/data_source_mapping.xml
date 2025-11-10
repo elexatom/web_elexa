@@ -2,7 +2,6 @@
 <project version="4">
   <component name="DataSourcePerFileMappings">
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/c981db5b-41bd-4383-b2ef-e272e2f6a6d2/console.sql" value="c981db5b-41bd-4383-b2ef-e272e2f6a6d2" />
-    <file url="file://$PROJECT_DIR$/src/Controllers/Apis/UsersApi.php" value="c981db5b-41bd-4383-b2ef-e272e2f6a6d2" />
     <file url="file://$PROJECT_DIR$/src/Models/ArticleManager.php" value="c981db5b-41bd-4383-b2ef-e272e2f6a6d2" />
     <file url="file://$PROJECT_DIR$/src/Models/ReviewManager.php" value="c981db5b-41bd-4383-b2ef-e272e2f6a6d2" />
     <file url="file://$PROJECT_DIR$/src/Models/UserManager.php" value="c981db5b-41bd-4383-b2ef-e272e2f6a6d2" />

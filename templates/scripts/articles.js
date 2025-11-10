@@ -84,12 +84,12 @@ $("#newArticleForm").on("submit", async function (e) {
 
     // Validace PDF souboru
     const pdfFile = formData.get("pdf")
-    if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
-        showToast("PDF soubor je příliš velký. Maximum je 10 MB.", "error")
+    if (pdfFile && pdfFile.size > 20 * 1024 * 1024) { // 20 MB
+        showToast("PDF soubor je příliš velký. Maximum je 20 MB.", "error")
         return
     }
 
-    const res = await ajaxRequest("/articles/create", "POST", formData, true)
+    const res = await ajaxRequest("/articles/create-article", "POST", formData, true)
 
     if (res) {
         // Zavrit modal a obnovit stranku
@@ -124,7 +124,7 @@ $("#editArticleForm").on("submit", async function (e) {
         abstract: $("#editAbstract").val()
     }
 
-    const res = await ajaxRequest("/articles/update", "POST", formData)
+    const res = await ajaxRequest("/articles/edit-article", "POST", formData)
 
     if (res) {
         const articleId = formData.article_id
@@ -153,10 +153,10 @@ $(document).on("click", ".delete-article-btn", async function () {
         return
     }
 
-    const res = await ajaxRequest("/articles/delete", "POST", {article_id: articleId})
+    const res = await ajaxRequest("/articles/delete-article", "POST", {article_id: articleId})
 
     if (res) {
-        // Odstranit kartu z DOM s animaci
+        // Odstranit kartu clanku s animaci
         const $card = $(`.article-card[data-article-id="${articleId}"]`)
         $card.fadeOut(400, function () {
             $(this).remove()
@@ -184,14 +184,14 @@ $(document).on("click", ".delete-article-btn", async function () {
 // Aktualizace poctu v tabech
 function updateTabCounts() {
     const total = $(".article-card").length
-    const pending = $('.article-card[data-status="pending"]').length
-    const accepted = $('.article-card[data-status="accepted"]').length
-    const denied = $('.article-card[data-status="denied"]').length
+    const pending = $(".article-card[data-status=\"pending\"]").length
+    const accepted = $(".article-card[data-status=\"accepted\"]").length
+    const denied = $(".article-card[data-status=\"denied\"]").length
 
-    $('.tab[data-filter="all"] .badge').text(total)
-    $('.tab[data-filter="pending"] .badge').text(pending)
-    $('.tab[data-filter="accepted"] .badge').text(accepted)
-    $('.tab[data-filter="denied"] .badge').text(denied)
+    $(".tab[data-filter=\"all\"] .badge").text(total)
+    $(".tab[data-filter=\"pending\"] .badge").text(pending)
+    $(".tab[data-filter=\"accepted\"] .badge").text(accepted)
+    $(".tab[data-filter=\"denied\"] .badge").text(denied)
 }
 
 // Nastaveni dnesniho data jako vychozi v novem clanku
@@ -200,5 +200,52 @@ $(document).ready(function () {
     $("#newDate").val(today)
 
     // Inicializace ikon
+    lucide.createIcons()
+})
+
+$(document).on("click", ".show-pdf-btn", function (e) {
+    e.preventDefault() // Zamezit vychozi akci odkazu
+
+    const $btn = $(this)
+    // Najdeme ikonu vedle tlacitka
+    const $icon = $btn.siblings("i[data-lucide]")
+    const pdfUrl = $btn.data("pdf-url")
+    const targetId = $btn.data("target-id")
+    const $container = $(`#${targetId}`)
+
+    // Najdeme misto, kam vlozime iframe
+    const $iframeWrapper = $container.find("div[style*=\"padding-top\"]")
+
+    if ($container.is(":visible")) {
+        // Skryt PDF
+        $container.slideUp(300, function () {
+            $(this).addClass("hidden")
+            $iframeWrapper.empty().html(`
+                <p class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    Načítání PDF...
+                </p>
+            `) // Vymazat iframe pro usporu pameti
+        })
+        $btn.text("Zobrazit PDF")
+        $icon.attr("data-lucide", "file-text")
+    } else {
+        // Zobrazit PDF
+        // Vytvorit iframe
+        const $iframe = $(`
+            <iframe src="${pdfUrl}" 
+                    class="absolute top-0 left-0 w-full h-full border rounded-lg">
+                Váš prohlížeč nepodporuje vkládání PDF. 
+                <a href="${pdfUrl}" target="_blank">Zobrazit v nové záložce</a>.
+            </iframe>
+        `)
+
+        // Vlozit a zobrazit
+        $iframeWrapper.empty().append($iframe)
+        $container.removeClass("hidden").hide().slideDown(300) // .hide() je tu pro spravnou funkci slideDown
+        $btn.text("Skrýt PDF")
+        $icon.attr("data-lucide", "chevron-up")
+    }
+
+    // Aktualizovat ikony
     lucide.createIcons()
 })

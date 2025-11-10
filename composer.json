@@ -7,7 +7,9 @@
     "twig/twig": "^3.21",
     "ext-pdo": "*",
     "ext-fileinfo": "*",
-    "ramsey/uuid": "^4.9"
+    "ramsey/uuid": "^4.9",
+    "ckeditor/ckeditor": "4.*",
+    "tinymce/tinymce": "^8.2"
   },
   "autoload": {
     "psr-4": {

@@ -5,14 +5,14 @@ namespace App\Controllers;
 use App\Models\UserManager;
 use Ramsey\Uuid\Uuid;
 
+/**
+ * Controller pro spravu profilu uzivatele
+ */
 class ProfileCtrl extends Controller
 {
-    private UserManager $userManager;
-
     public function __construct($twig)
     {
         parent::__construct($twig);
-        $this->userManager = new UserManager();
 
         // uzivatel musi byt prihlasen
         if (!isset($_SESSION['user'])) $this->redirect('/auth/login');
@@ -103,6 +103,11 @@ class ProfileCtrl extends Controller
         $conf_pwd = $_POST['conf_pwd'] ?? '';
         $user_id = $_SESSION['user_id'];
 
+        // validace
+        if (empty($cur_pwd) || empty($new_pwd) || empty($conf_pwd)) {
+            $this->jsonResponse(['success' => false, 'message' => 'Neplatné data.'], 400);
+        }
+
         // validace aktualniho hesla
         if (!$this->userManager->verifyCurrentPwd($user_id, $cur_pwd)) {
             $this->jsonResponse(['success' => false, 'message' => 'Současné heslo je nesprávné.'],
@@ -162,7 +167,7 @@ class ProfileCtrl extends Controller
 
         // validace velikosti (max 10MB)
         if ($file_pic['size'] > 10 * 1024 * 1024) {
-            $this->jsonResponse(['success' => false, 'message' => 'Obrázek je příliš velký. Maximum je 5MB.'], 400);
+            $this->jsonResponse(['success' => false, 'message' => 'Obrázek je příliš velký. Maximum je 10MB.'], 400);
         }
 
         // vytvorit upload dir pokud neexistuje
@@ -193,7 +198,6 @@ class ProfileCtrl extends Controller
 
                 $this->jsonResponse(['success' => true, 'message' => 'Fotka byla úspěšně změněna.']);
             } else $this->jsonResponse(['success' => false, 'message' => 'Fotku se nepodařilo uložit.'], 400);
-
         } else $this->jsonResponse(['success' => false, 'message' => 'Fotku se nepodařilo uložit.'], 400);
     }
 }

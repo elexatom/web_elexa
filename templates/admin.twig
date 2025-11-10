@@ -1,0 +1,283 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+    {% set total = articles|length %}
+    {% set pending = 0 %}
+    {% set accepted = 0 %}
+    {% set declined = 0 %}
+
+    {% for article in articles %}
+        {% if article.status == 'cekajici' %}
+            {% set pending = pending + 1 %}
+        {% elseif article.status == 'prijato' %}
+            {% set accepted = accepted + 1 %}
+        {% elseif article.status == 'zamitnuto' %}
+            {% set declined = declined + 1 %}
+        {% endif %}
+    {% endfor %}
+
+    <div>
+        <section class="container mx-auto px-4 py-8">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold">Správa článků</h1>
+                    <p class="text-sm opacity-70 mt-1">Přehled všech článků a jejich recenzí</p>
+                </div>
+            </div>
+
+            <!-- Toast notification -->
+            <div class="toast hidden" id="messageToast">
+                <div class="alert alert-success shadow-lg">
+                    <span id="messageText"></span>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div role="tablist" class="tabs tabs-boxed mb-6 bg-base-200 p-1">
+                <a role="tab" class="tab tab-active" data-filter="all">
+                    Všechny
+                    <div class="badge badge-sm ml-2">{{ total }}</div>
+                </a>
+                <a role="tab" class="tab" data-filter="cekajici">
+                    Čekající na rozhodnutí
+                    <div class="badge badge-warning badge-sm ml-2">{{ pending }}</div>
+                </a>
+                <a role="tab" class="tab" data-filter="prijato">
+                    Přijato
+                    <div class="badge badge-success badge-sm ml-2">{{ accepted }}</div>
+                </a>
+                <a role="tab" class="tab" data-filter="zamitnuto">
+                    Zamítnuto
+                    <div class="badge badge-error badge-sm ml-2">{{ declined }}</div>
+                </a>
+            </div>
+
+            <!-- Articles list -->
+            <div class="space-y-6" id="articlesContainer">
+                {% for article in articles %}
+                    {% set article_reviews = reviews|filter(r => r.clanek_id == article.clanek_id) %}
+
+                    <div class="card bg-base-100 shadow-xl article-card"
+                         data-status="{{ article.status }}"
+                         data-article-id="{{ article.clanek_id }}">
+                        <div class="card-body">
+                            <!-- Article header -->
+                            <div class="flex flex-col lg:flex-row justify-between items-start gap-4 mb-4">
+                                <div class="flex-1">
+                                    <h2 class="card-title text-xl mb-2">
+                                        <a href="{{ article.pdf_odkaz }}" target="_blank" class="link link-hover">
+                                            {{ article.nazev_clanku }}
+                                        </a>
+                                    </h2>
+
+                                    {% if article.status == 'prijato' %}
+                                        <div class="badge badge-success gap-1">
+                                            <i data-lucide="check" class="w-3 h-3"></i>
+                                            Přijato
+                                        </div>
+                                    {% elseif article.status == 'zamitnuto' %}
+                                        <div class="badge badge-error gap-1">
+                                            <i data-lucide="x" class="w-3 h-3"></i>
+                                            Zamítnuto
+                                        </div>
+                                    {% else %}
+                                        <div class="badge badge-warning gap-1">
+                                            <i data-lucide="clock" class="w-3 h-3"></i>
+                                            Čeká na rozhodnutí
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Action buttons -->
+                                <div class="action-buttons-container">
+                                    {% if article.status == 'cekajici' %}
+                                        <div class="flex gap-2">
+                                            <button class="btn btn-success btn-sm gap-1 accept-article-btn"
+                                                    data-article-id="{{ article.clanek_id }}">
+                                                <i data-lucide="check" class="w-4 h-4"></i>
+                                                Přijmout
+                                            </button>
+                                            <button class="btn btn-error btn-sm gap-1 decline-article-btn"
+                                                    data-article-id="{{ article.clanek_id }}">
+                                                <i data-lucide="x" class="w-4 h-4"></i>
+                                                Zamítnout
+                                            </button>
+                                        </div>
+                                    {% elseif article.status == 'prijato' or article.status == 'zamitnuto' %}
+                                        <button class="btn btn-warning btn-sm gap-1 reconsider-article-btn"
+                                                data-article-id="{{ article.clanek_id }}">
+                                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                                            Přehodnotit
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Metadata -->
+                            <div class="flex flex-wrap gap-4 text-sm mb-4">
+                                <div class="flex items-center gap-1 opacity-70">
+                                    <i data-lucide="user" class="w-4 h-4"></i>
+                                    <span>Autor ID: {{ article.autor_id }}</span>
+                                </div>
+                                <div class="flex items-center gap-1 opacity-70">
+                                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                                    <span>{{ article.datum|date('d.m.Y') }}</span>
+                                </div>
+                                <div class="flex items-center gap-1 opacity-70">
+                                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                                    <a href="{{ article.pdf_odkaz }}" target="_blank" class="link link-primary">
+                                        Zobrazit PDF
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="divider"></div>
+
+                            <!-- Reviewers section -->
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="font-semibold flex items-center gap-2">
+                                        <i data-lucide="users" class="w-4 h-4"></i>
+                                        Recenzenti ({{ article_reviews|length }}/3)
+                                    </h3>
+                                    {% if article_reviews|length < 3 %}
+                                        <button class="btn btn-sm btn-outline gap-1 add-reviewer-btn"
+                                                data-article-id="{{ article.clanek_id }}">
+                                            <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                            Přidat recenzenta
+                                        </button>
+                                    {% endif %}
+                                </div>
+
+                                {% if article_reviews|length > 0 %}
+                                    <!-- Reviews table -->
+                                    <div class="overflow-x-auto">
+                                        <table class="table table-sm">
+                                            <thead>
+                                            <tr>
+                                                <th>Recenzent</th>
+                                                <th class="text-center">Inovace</th>
+                                                <th class="text-center">Udržitelnost</th>
+                                                <th class="text-center">Metodologie</th>
+                                                <th class="text-center">Kvalita</th>
+                                                <th class="text-center">Akce</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for review in article_reviews %}
+                                                {% set reviewer = reviewers|filter(r => r.userid == review.recenzent_id)|first %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="flex flex-col">
+                                                            <span class="font-medium">{{ reviewer.jmeno }}</span>
+                                                            <span class="text-xs opacity-60">@{{ reviewer.nick }}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="rating rating-sm">
+                                                            {% for i in 1..5 %}
+                                                                <input type="radio" class="mask mask-star-2 bg-warning"
+                                                                       disabled
+                                                                       {% if i <= review.cat1 %}checked{% endif %} />
+                                                            {% endfor %}
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="rating rating-sm">
+                                                            {% for i in 1..5 %}
+                                                                <input type="radio" class="mask mask-star-2 bg-warning"
+                                                                       disabled
+                                                                       {% if i <= review.cat2 %}checked{% endif %} />
+                                                            {% endfor %}
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="rating rating-sm">
+                                                            {% for i in 1..5 %}
+                                                                <input type="radio" class="mask mask-star-2 bg-warning"
+                                                                       disabled
+                                                                       {% if i <= review.cat3 %}checked{% endif %} />
+                                                            {% endfor %}
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="rating rating-sm">
+                                                            {% for i in 1..5 %}
+                                                                <input type="radio" class="mask mask-star-2 bg-warning"
+                                                                       disabled
+                                                                       {% if i <= review.cat4 %}checked{% endif %} />
+                                                            {% endfor %}
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <button class="btn btn-xs btn-error btn-ghost remove-review-btn"
+                                                                data-review-id="{{ review.recenze_id }}">
+                                                            <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        <i data-lucide="info" class="w-5 h-5"></i>
+                                        <span>Čeká na přiřazení recenzentů</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Modal - Add Reviewer -->
+        <dialog id="addReviewerModal" class="modal">
+            <div class="modal-box">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
+                <h3 class="font-bold text-lg mb-4">Přidat recenzenta</h3>
+
+                <form id="addReviewerForm" class="space-y-4">
+                    <input type="hidden" id="reviewArticleId" name="article_id"/>
+
+                    <div>
+                        <label class="label" for="reviewerSelect">
+                            <span class="label-text">Vyberte recenzenta *</span>
+                        </label>
+                        <select id="reviewerSelect" name="reviewer_id" required
+                                class="select select-bordered w-full">
+                            <option value="">-- Vyberte recenzenta --</option>
+                            {% for reviewer in reviewers %}
+                                <option value="{{ reviewer.userid }}">
+                                    {{ reviewer.jmeno }} (@{{ reviewer.nick }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="modal-action">
+                        <button type="button" class="btn btn-ghost" onclick="addReviewerModal.close()">
+                            Zrušit
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i>
+                            Přiřadit
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+                integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+        <script src="/templates/scripts/admin.js"></script>
+    </div>
+{% endblock %}

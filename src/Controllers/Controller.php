@@ -2,6 +2,9 @@
 
 namespace App\Controllers;
 
+use App\Models\ArticleManager;
+use App\Models\ReviewManager;
+use App\Models\UserManager;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -16,10 +19,16 @@ abstract class Controller
     protected string $view = "";
     protected array $header = ['title' => '', 'key_words' => '', 'description' => ''];
     protected Environment $twig;
+    protected ArticleManager $articleManager;
+    protected ReviewManager $reviewManager;
+    protected UserManager $userManager;
 
-    public function __construct(Environment $twig) // Vlozime twig pres konstruktor
+    public function __construct(Environment $twig) // vlozime twig pres konstruktor
     {
         $this->twig = $twig;
+        $this->articleManager = new ArticleManager();
+        $this->reviewManager = new ReviewManager($this->articleManager);
+        $this->userManager = new UserManager();
     }
 
     abstract public function process(array $params): void;
@@ -32,7 +41,7 @@ abstract class Controller
         if (!empty($this->view)) {
             try {
                 echo $this->twig->render($this->view . '.twig', $context);
-            } catch (SyntaxError | RuntimeError | LoaderError) {
+            } catch (SyntaxError|RuntimeError|LoaderError) {
                 $this->redirect('/notFound');
             }
         }
@@ -51,30 +60,5 @@ abstract class Controller
         header('Content-Type: application/json');
         echo json_encode($data);
         exit;
-    }
-
-
-// bot added --------------------------
-        protected function isAjaxRequest(): bool
-        {
-            return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-                   strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
-        }
-
-
-// ------------------------------
-    protected function setFlashMessage(string $type, string $message): void
-    {
-        if (!isset($_SESSION['flash'])) {
-            $_SESSION['flash'] = [];
-        }
-        $_SESSION['flash'][$type] = $message;
-    }
-
-    protected function getFlashMessages(): array
-    {
-        $messages = $_SESSION['flash'] ?? [];
-        unset($_SESSION['flash']);
-        return $messages;
     }
 }

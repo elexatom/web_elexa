@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="cs" data-theme="nord">
+<html lang="cs" data-theme="winter">
 <head>
     <title>{{ header.title }}</title>
     <meta charset="utf-8"/>
@@ -14,35 +14,65 @@
 <header class="navbar bg-black text-white shadow-md">
     <div class="navbar-start">
         <div class="dropdown">
-            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
-                     stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/>
-                </svg>
-            </div>
-            <ul
-                    tabindex="0"
-                    class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-                <li><a>Item 1</a></li>
-                <li>
-                    <a>Parent</a>
-                    <ul class="p-2">
-                        <li><a>Submenu 1</a></li>
-                        <li><a>Submenu 2</a></li>
+            <div class="drawer">
+                <input id="sidebar" type="checkbox" class="drawer-toggle"/>
+                <div class="drawer-content">
+                    <label for="sidebar" tabindex="0" class="btn drawer-button btn-ghost lg:hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M4 6h16M4 12h8m-8 6h16"/>
+                        </svg>
+                    </label>
+                </div>
+                <div class="drawer-side">
+                    <label for="sidebar" aria-label="close sidebar" class="drawer-overlay"></label>
+                    <ul class="menu bg-base-200 text-base-content min-h-full w-80 p-4">
+                        <a class="font-bold text-xl md:text-2xl mb-2">DigiArch</a>
+                        {% if user is defined and user %}
+                            {% if user.role == 'admin' or user.role == 'superadmin' %}
+                                <li class="text-base-content"><a href="/users">Správa uživatelů</a></li>
+                                <li><a href="/admin">Správa článků</a></li>
+                            {% endif %}
+                        {% endif %}
+                        {% if user is defined and user %}
+                            {% if user.role == 'recenzent' %}
+                                <li><a href="/reviews">Moje recenze</a></li>
+                            {% endif %}
+                        {% endif %}
+                        {% if user is defined and user %}
+                            {% if user.role == 'autor' %}
+                                <li><a href="/articles">Moje články</a></li>
+                            {% endif %}
+                        {% endif %}
+                        <li><a href="/profile">Uživatelský profil</a></li>
+
                     </ul>
-                </li>
-                <li><a>Item 3</a></li>
-            </ul>
+                </div>
+            </div>
         </div>
         <div class="flex-1 cursor-default">
-            <a class="font-bold text-2xl ml-4">Forum DigiArch</a>
+            <a href="/" class="font-bold text-xl md:text-2xl ml-4">DigiArch</a>
         </div>
     </div>
     <div class="navbar-center hidden lg:flex">
         <ul class="menu menu-horizontal px-1">
-            <li><a href="/users">uzivatele</a></li>
-            <li><a href="/articles">moje clanky</a></li>
-            <li><a>Item 3</a></li>
+            {% if user is defined and user %}
+                {% if user.role == 'admin' or user.role == 'superadmin' %}
+                    <li><a href="/users">Správa uživatelů</a></li>
+                    <li><a href="/admin">Správa článků</a></li>
+                {% endif %}
+            {% endif %}
+            {% if user is defined and user %}
+                {% if user.role == 'recenzent' %}
+                    <li><a href="/reviews">Moje recenze</a></li>
+                {% endif %}
+            {% endif %}
+            {% if user is defined and user %}
+                {% if user.role == 'autor' %}
+                    <li><a href="/articles">Moje články</a></li>
+                {% endif %}
+            {% endif %}
         </ul>
     </div>
     <div class="navbar-end">
@@ -101,36 +131,23 @@
 
 <footer class="bg-black text-white py-8 mt-auto w-full">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
             <!-- Brand / About -->
             <div>
                 <h2 class="text-xl font-bold">Forum DigiArch</h2>
                 <p class="mt-2 text-sm">
-                    A short description about your site, company, or project.
-                    Keep it simple and clean.
+                    Forum Digitální Architektury je platforma pro sdílení znalostí, diskusi a spolupráci mezi odborníky
+                    a nadšenci v oblasti digitální architektury. Naším cílem je podporovat inovace a rozvoj v tomto
+                    dynamickém oboru.
                 </p>
             </div>
 
-            <!-- Links -->
             <div>
                 <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Links</h3>
                 <ul class="mt-4 space-y-2">
-                    <li><a href="#" class="hover:text-white transition">Home</a></li>
-                    <li><a href="#" class="hover:text-white transition">About</a></li>
-                    <li><a href="#" class="hover:text-white transition">Services</a></li>
-                    <li><a href="#" class="hover:text-white transition">Contact</a></li>
+                    <li><a href="#" class="hover:text-white transition">Domovská stránka</a></li>
                 </ul>
-            </div>
-
-            <!-- Socials -->
-            <div>
-                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Follow Us</h3>
-                <div class="mt-4 flex space-x-4">
-                    <a href="#" class="hover:text-white transition">🐦</a>
-                    <a href="#" class="hover:text-white transition">📘</a>
-                    <a href="#" class="hover:text-white transition">📸</a>
-                </div>
             </div>
 
         </div>
@@ -149,6 +166,48 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
+<script>
+    (function () {
+        const THEME_KEY = "theme"
+        const DEFAULT_THEME = "winter"
+        const controllers = document.querySelectorAll(".theme-controller")
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute("data-theme", theme || DEFAULT_THEME)
+        }
+
+        function init() {
+            const saved = localStorage.getItem(THEME_KEY) || DEFAULT_THEME
+            applyTheme(saved)
+
+            controllers.forEach(ctrl => {
+                // checkbox toggle
+                if (ctrl.type === "checkbox") {
+                    ctrl.checked = (saved === ctrl.value)
+                    ctrl.addEventListener("change", function () {
+                        const newTheme = this.checked ? this.value : DEFAULT_THEME
+                        localStorage.setItem(THEME_KEY, newTheme)
+                        applyTheme(newTheme)
+                    })
+                    return
+                }
+
+                // generic input/select handlers
+                ctrl.addEventListener("change", function () {
+                    const newTheme = this.value || DEFAULT_THEME
+                    localStorage.setItem(THEME_KEY, newTheme)
+                    applyTheme(newTheme)
+                })
+            })
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", init)
+        } else {
+            init()
+        }
+    })()
+</script>
 </body>
 
 </html>

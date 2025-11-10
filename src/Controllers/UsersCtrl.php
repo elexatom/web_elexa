@@ -2,19 +2,14 @@
 
 namespace App\Controllers;
 
-use App\Models\UserManager;
-
 /**
  *  Stranka pro spravu uzivatelu adminem a superadminem
  */
 class UsersCtrl extends Controller
 {
-    private UserManager $userManager;
-
     public function __construct($twig)
     {
         parent::__construct($twig);
-        $this->userManager = new UserManager();
 
         // uzivatel musi byt prihlasen
         if (!isset($_SESSION['user'])) $this->redirect('/auth/login');
