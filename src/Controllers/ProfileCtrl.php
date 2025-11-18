@@ -50,7 +50,7 @@ class ProfileCtrl extends Controller
     }
 
     // zmenit jmeno
-    public function updateName(): void
+    private function updateName(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatný dotaz.'], 405);
@@ -71,7 +71,7 @@ class ProfileCtrl extends Controller
     }
 
     // update nicku
-    public function updateNick(): void
+    private function updateNick(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatný dotaz.'], 405);
@@ -98,7 +98,7 @@ class ProfileCtrl extends Controller
     }
 
     // update hesla
-    public function updatePassword(): void
+    private function updatePassword(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatný dotaz'], 405);
@@ -152,7 +152,7 @@ class ProfileCtrl extends Controller
     }
 
     // nahrani profilove fotky
-    public function uploadPicture(): void
+    private function uploadPicture(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatný dotaz.'], 405);

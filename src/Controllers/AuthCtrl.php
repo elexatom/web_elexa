@@ -65,7 +65,7 @@ class AuthCtrl extends Controller
     }
 
     // registrace uzivatele
-    public function handleRegister(): void
+    private function handleRegister(): void
     {
         $nickname = trim($_POST['nick'] ?? '');
         $username = trim($_POST['username'] ?? '');

@@ -7,7 +7,7 @@ use Twig\Loader\FilesystemLoader;
 
 require __DIR__ . '/vendor/autoload.php';
 mb_internal_encoding("UTF-8");
-ini_set("session.cookie_httponly", 1);
+ini_set("session.cookie_httponly", 1); // XSS protection - zabrani cteni cookies JS
 
 session_start();
 
