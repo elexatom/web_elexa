@@ -1,5 +1,6 @@
-// validace hesla
-
+// ------------------------------------------------------- //
+//  ------------------ Validace Hesla -------------------- //
+// ------------------------------------------------------- //
 const newPassword = $("#newPwd"), confirmPassword = $("#confirmPwd"), confirmHint = $("#confirmHint"),
     strengthFill = $("#strengthFill"), submitBtn = $("#submitPwd"), requirements = $("#pwdRequirements li")
 
@@ -12,6 +13,7 @@ const checks = {
     special: pwd => /[!@#$%^&*(),.?":{}|<>]/.test(pwd)
 }
 
+// aktualizace sily hesla - progress bar
 function updatePasswordStrength() {
     const pwd = newPassword.val()
     let passed = 0
@@ -38,6 +40,7 @@ function updatePasswordStrength() {
     checkFormValidity()
 }
 
+// kontrola shody hesla
 function checkPasswordMatch() {
     const newPwd = newPassword.val(), confirmPwd = confirmPassword.val()
 
@@ -48,6 +51,7 @@ function checkPasswordMatch() {
     checkFormValidity()
 }
 
+// kontrola platnosti formulare
 function checkFormValidity() {
     const newPwd = newPassword.val(), confirmPwd = confirmPassword.val()
     const allPassed = Object.values(checks).every(fn => fn(newPwd))
@@ -66,20 +70,24 @@ $(".togglePwd").on("click", function () {
     lucide.createIcons()
 })
 
+// ------------------------------------------------------- //
+//  --------------------- AJAX helper -------------------- //
+// ------------------------------------------------------- //
 async function ajaxRequest(url, method, data, isFormData = false) {
     try {
         const response = await $.ajax({
             url,
             type: method,
-            data: isFormData ? data : $.param(data), // serialize objektu pokudn neni FormData
-            processData: !isFormData,                // preskocit serializaci
+            data: isFormData ? data : $.param(data), // serializovat data do query stringu
+            processData: !isFormData,                // pokud se jedna o FormData, nezpracovavat
             contentType: isFormData ? false : "application/x-www-form-urlencoded; charset=UTF-8",
             dataType: "json"
         })
 
+        // odpoved
         showToast(response.message || "Operace se provedla úspěšně.", "success")
         return response
-    } catch (xhr) {
+    } catch (xhr) { // nastal problem
         let res = {}
         try {
             res = xhr.responseJSON || JSON.parse(xhr.responseText)
@@ -92,7 +100,9 @@ async function ajaxRequest(url, method, data, isFormData = false) {
     }
 }
 
-// profilova fotka - nahled a upload
+// ------------------------------------------------------- //
+//  ------------------ Profilova fotka ------------------- //
+// ------------------------------------------------------- //
 const $profilePictureInput = $("#profilePictureInput")
 const $profilePreview = $("#profilePreview")
 const $photoSubmitBtn = $("#photoSubmitBtn")
@@ -175,8 +185,9 @@ $photoSubmitBtn.on("click", async function (e) {
     lucide.createIcons()
 })
 
-/* ---------------------------------------------------------------------- */
-
+// ------------------------------------------------------- //
+//  ------------------ Toast notifikace ------------------ //
+// ------------------------------------------------------- //
 function showToast(message, type = "success") {
     const $toast = $("#messageToast")
     const $text = $("#messageText")
@@ -215,8 +226,9 @@ function showToast(message, type = "success") {
         })
 }
 
-
-// zmena jmena
+// ------------------------------------------------------- //
+//  ------------------- Zmena Jmena ---------------------- //
+// ------------------------------------------------------- //
 $("#submitName").on("click", async function (e) {
     e.preventDefault()
     const newName = $("#username").val()
@@ -224,7 +236,9 @@ $("#submitName").on("click", async function (e) {
     if (res) $("#jmeno").text(newName)
 })
 
-// zmena nicku
+// ------------------------------------------------------- //
+//  --------------------- Zmena nicku -------------------- //
+// ------------------------------------------------------- //
 $("#submitNick").on("click", async function (e) {
     e.preventDefault()
     const newNick = $("#nickname").val()
@@ -232,6 +246,9 @@ $("#submitNick").on("click", async function (e) {
     if (res) $("#nick").text("@" + newNick)
 })
 
+// ------------------------------------------------------- //
+//  ----------- Odeslat a Overit Nove Heslo -------------- //
+// ------------------------------------------------------- //
 submitBtn.on("click", async function (e) {
     e.preventDefault()
     const newPwd = $("#newPwd")

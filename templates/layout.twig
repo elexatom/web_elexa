@@ -1,3 +1,5 @@
+{# Template - navbar a footer #}
+
 <!DOCTYPE html>
 <html lang="cs" data-theme="winter">
 <head>
@@ -6,12 +8,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"/>
     <meta name="keywords" content="{{ header.key_words }}">
     <meta name="description" content="{{ header.description }}">
-    <link rel="stylesheet" type="text/css" href="../output.css">
+    <link rel="stylesheet" type="text/css" href="../public/output.css">
 </head>
 
 <body class="flex flex-col min-h-screen">
-
 <header class="navbar bg-black text-white shadow-md">
+    <!-- Navbar Start -->
     <div class="navbar-start">
         <div class="dropdown">
             <div class="drawer">
@@ -27,8 +29,8 @@
                 </div>
                 <div class="drawer-side">
                     <label for="sidebar" aria-label="close sidebar" class="drawer-overlay"></label>
+                    <a class="font-bold text-xl md:text-2xl mb-2">DigiArch</a>
                     <ul class="menu bg-base-200 text-base-content min-h-full w-80 p-4">
-                        <a class="font-bold text-xl md:text-2xl mb-2">DigiArch</a>
                         {% if user is defined and user %}
                             {% if user.role == 'admin' or user.role == 'superadmin' %}
                                 <li class="text-base-content"><a href="/users">Správa uživatelů</a></li>
@@ -55,6 +57,8 @@
             <a href="/" class="font-bold text-xl md:text-2xl ml-4">DigiArch</a>
         </div>
     </div>
+
+    <!-- Navbar Center -->
     <div class="navbar-center hidden lg:flex">
         <ul class="menu menu-horizontal px-1">
             {% if user is defined and user %}
@@ -75,6 +79,8 @@
             {% endif %}
         </ul>
     </div>
+
+    <!-- Navbar End -->
     <div class="navbar-end">
         <label class="swap swap-rotate mr-5">
             <input type="checkbox" class="theme-controller" value="dracula"/>
@@ -99,7 +105,7 @@
         </label>
 
         {% if user is defined and user %}
-            {# User is logged in - show dropdown #}
+            {# uzivatel prihlasen #}
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
                     <div class="w-10 rounded-full">
@@ -119,21 +125,23 @@
                 </ul>
             </div>
         {% else %}
-            {# User is not logged in - show login button #}
+            {# uzivatel neni prihlasen - login btn #}
             <a href="/auth" class="btn btn-primary text-white">Login</a>
         {% endif %}
     </div>
 </header>
 
+<!-- Main content -->
 <main class="flex-grow md:bg-base-200">
     {% block content %}{% endblock %}
 </main>
 
+<!-- Footer -->
 <footer class="bg-black text-white py-8 mt-auto w-full">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-            <!-- Brand / About -->
+            <!-- Footer text -->
             <div>
                 <h2 class="text-xl font-bold">Forum DigiArch</h2>
                 <p class="mt-2 text-sm">
@@ -153,7 +161,7 @@
         </div>
 
         <div class="mt-8 pt-6 text-center text-xs text-gray-300">
-            © 2025 Forum DigiArch. All rights reserved.
+            © 2025 Forum DigiArch
         </div>
     </div>
 </footer>
@@ -167,6 +175,7 @@
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
 <script>
+    // prepinac dark/light modu
     (function () {
         const THEME_KEY = "theme"
         const DEFAULT_THEME = "winter"
@@ -192,7 +201,6 @@
                     return
                 }
 
-                // generic input/select handlers
                 ctrl.addEventListener("change", function () {
                     const newTheme = this.value || DEFAULT_THEME
                     localStorage.setItem(THEME_KEY, newTheme)
@@ -201,6 +209,7 @@
             })
         }
 
+        // inicializace po nacteni DOM
         if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", init)
         } else {

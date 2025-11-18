@@ -1,3 +1,5 @@
+{# Template - /admin - správa článků #}
+
 {% extends 'layout.twig' %}
 
 {% block content %}
@@ -18,7 +20,7 @@
 
     <div>
         <section class="container mx-auto px-4 py-8">
-            <!-- Header -->
+            <!-- Nadpis -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
                     <h1 class="text-3xl font-bold">Správa článků</h1>
@@ -26,7 +28,7 @@
                 </div>
             </div>
 
-            <!-- Toast notification -->
+            <!-- Toast notifikace -->
             <div class="toast hidden" id="messageToast">
                 <div class="alert alert-success shadow-lg">
                     <span id="messageText"></span>
@@ -53,7 +55,7 @@
                 </a>
             </div>
 
-            <!-- Articles list -->
+            <!-- Seznam článků -->
             <div class="space-y-6" id="articlesContainer">
                 {% for article in articles %}
                     {% set article_reviews = reviews|filter(r => r.clanek_id == article.clanek_id) %}
@@ -62,7 +64,7 @@
                          data-status="{{ article.status }}"
                          data-article-id="{{ article.clanek_id }}">
                         <div class="card-body">
-                            <!-- Article header -->
+                            <!-- Hlavička článku -->
                             <div class="flex flex-col lg:flex-row justify-between items-start gap-4 mb-4">
                                 <div class="flex-1">
                                     <h2 class="card-title text-xl mb-2">
@@ -89,7 +91,7 @@
                                     {% endif %}
                                 </div>
 
-                                <!-- Action buttons -->
+                                <!-- Action btns -->
                                 <div class="action-buttons-container">
                                     {% if article.status == 'cekajici' %}
                                         <div class="flex gap-2">
@@ -114,7 +116,7 @@
                                 </div>
                             </div>
 
-                            <!-- Metadata -->
+                            <!-- Údaje a odkaz na PDF -->
                             <div class="flex flex-wrap gap-4 text-sm mb-4">
                                 <div class="flex items-center gap-1 opacity-70">
                                     <i data-lucide="user" class="w-4 h-4"></i>
@@ -132,9 +134,11 @@
                                 </div>
                             </div>
 
+                            <p>{{ article.abstrakt }}</p>
+
                             <div class="divider"></div>
 
-                            <!-- Reviewers section -->
+                            <!-- Recenze/nti k článku -->
                             <div class="space-y-3">
                                 <div class="flex justify-between items-center">
                                     <h3 class="font-semibold flex items-center gap-2">
@@ -142,16 +146,20 @@
                                         Recenzenti ({{ article_reviews|length }}/3)
                                     </h3>
                                     {% if article_reviews|length < 3 %}
-                                        <button class="btn btn-sm btn-outline gap-1 add-reviewer-btn"
-                                                data-article-id="{{ article.clanek_id }}">
-                                            <i data-lucide="user-plus" class="w-4 h-4"></i>
-                                            Přidat recenzenta
-                                        </button>
+                                        {% if article.status != "zamitnuto" %}
+                                            {% if article.status != "prijato" %}
+                                                <button class="btn btn-sm btn-outline gap-1 add-reviewer-btn"
+                                                        data-article-id="{{ article.clanek_id }}">
+                                                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                                    Přidat recenzenta
+                                                </button>
+                                            {% endif %}
+                                        {% endif %}
                                     {% endif %}
                                 </div>
 
                                 {% if article_reviews|length > 0 %}
-                                    <!-- Reviews table -->
+                                    <!-- Tabulka s recenzemi -->
                                     <div class="overflow-x-auto">
                                         <table class="table table-sm">
                                             <thead>
@@ -161,7 +169,9 @@
                                                 <th class="text-center">Udržitelnost</th>
                                                 <th class="text-center">Metodologie</th>
                                                 <th class="text-center">Kvalita</th>
-                                                <th class="text-center">Akce</th>
+                                                {% if article.status != "prijato" %}
+                                                    <th class="text-center">Akce</th>
+                                                {% endif %}
                                             </tr>
                                             </thead>
                                             <tbody>
@@ -210,12 +220,14 @@
                                                             {% endfor %}
                                                         </div>
                                                     </td>
-                                                    <td class="text-center">
-                                                        <button class="btn btn-xs btn-error btn-ghost remove-review-btn"
-                                                                data-review-id="{{ review.recenze_id }}">
-                                                            <i data-lucide="trash-2" class="w-3 h-3"></i>
-                                                        </button>
-                                                    </td>
+                                                    {% if article.status != "prijato" %}
+                                                        <td class="text-center">
+                                                            <button class="btn btn-xs btn-error btn-ghost remove-review-btn"
+                                                                    data-review-id="{{ review.recenze_id }}">
+                                                                <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                                            </button>
+                                                        </td>
+                                                    {% endif %}
                                                 </tr>
                                             {% endfor %}
                                             </tbody>
@@ -234,12 +246,10 @@
             </div>
         </section>
 
-        <!-- Modal - Add Reviewer -->
+        <!-- Modal - Přidat recenzenta -->
         <dialog id="addReviewerModal" class="modal">
             <div class="modal-box">
-                <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                </form>
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 <h3 class="font-bold text-lg mb-4">Přidat recenzenta</h3>
 
                 <form id="addReviewerForm" class="space-y-4">
@@ -271,9 +281,9 @@
                     </div>
                 </form>
             </div>
-            <form method="dialog" class="modal-backdrop">
+            <div class="modal-backdrop">
                 <button>close</button>
-            </form>
+            </div>
         </dialog>
 
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"

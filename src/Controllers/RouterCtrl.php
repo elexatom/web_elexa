@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controllers;
 
@@ -7,16 +8,17 @@ namespace App\Controllers;
  */
 class RouterCtrl extends Controller
 {
-    // router zjisti dle url jaky ctrl volame, vytvori ho a ulozi do atributu $controller
+    // router dle volane url vytvori ctrl a ulozi do atributu $controller
     protected Controller $controller;
 
     public function process(array $params): void
     {
-        $parsed_url = $this->parseUrl($params[0]);
+        $parsed_url = $this->parseUrl($params[0]); // adresa
         if (empty($parsed_url[0]))
             $this->redirect('/home');
 
-        $class_ctrl = 'App\\Controllers\\' . $this->toCamelCase(array_shift($parsed_url)) . 'Ctrl'; // prvni element
+        // adresa hledaneho controlleru
+        $class_ctrl = 'App\\Controllers\\' . $this->toCamelCase(array_shift($parsed_url)) . 'Ctrl';
 
         if (class_exists($class_ctrl)) // pokud existuje vytvorime instanci
             $this->controller = new $class_ctrl($this->twig);
@@ -25,12 +27,13 @@ class RouterCtrl extends Controller
 
         $this->controller->process($parsed_url); // zavolat logiku v ctrl
 
-        // nastavi data, headery a sablonu, ktera se ukaze
+        // predame data
         $this->data = $this->controller->data;
         $this->header = $this->controller->header;
         $this->view = $this->controller->view;
     }
 
+    // metoda pro parsovani url - rozdeli url na casti, delim. /
     private function parseUrl(string $url): array
     {
         $parsed_url = parse_url($url);
@@ -39,9 +42,10 @@ class RouterCtrl extends Controller
         return explode('/', $parsed_url['path']);
     }
 
+    // metoda pro konverzi stringu do camelCase
     private function toCamelCase(string $string): string
     {
-        // nazev-controlleru --> nazevControlleruController
+        // articles-published -> ArticlesPublished
         return str_replace(' ', '', ucwords(str_replace('-', ' ', $string)));
     }
 }

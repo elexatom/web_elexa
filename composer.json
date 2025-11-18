@@ -8,7 +8,6 @@
     "ext-pdo": "*",
     "ext-fileinfo": "*",
     "ramsey/uuid": "^4.9",
-    "ckeditor/ckeditor": "4.*",
     "tinymce/tinymce": "^8.2"
   },
   "autoload": {

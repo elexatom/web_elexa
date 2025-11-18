@@ -7,12 +7,13 @@ use Twig\Loader\FilesystemLoader;
 
 require __DIR__ . '/vendor/autoload.php';
 mb_internal_encoding("UTF-8");
+ini_set("session.cookie_httponly", 1);
 
 session_start();
 
 // Twig setup
 $loader = new FilesystemLoader(__DIR__ . '/templates');
-$twig = new Environment($loader, ['cache' => false, 'debug' => true]);
+$twig = new Environment($loader, ['cache' => false, 'debug' => true, 'autoescape' => 'html']);
 
 Db::connect("127.0.0.1", "dbadmin", "Zcu2025@", 'webdata');
 

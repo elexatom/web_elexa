@@ -1,8 +1,8 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Models\UserManager;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -10,6 +10,9 @@ use Ramsey\Uuid\Uuid;
  */
 class ProfileCtrl extends Controller
 {
+    /**
+     * @param $twig
+     */
     public function __construct($twig)
     {
         parent::__construct($twig);
@@ -46,13 +49,14 @@ class ProfileCtrl extends Controller
         $this->header['title'] = "Váš Profil | DigiArch"; // hlavicka stranky
     }
 
+    // zmenit jmeno
     public function updateName(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatný dotaz.'], 405);
         }
 
-        $jmeno = trim($_POST['jmeno'] ?? '');
+        $jmeno = htmlspecialchars(trim($_POST['jmeno'] ?? ''), ENT_QUOTES, 'UTF-8');
 
         // validace
         if (empty($jmeno) || !preg_match('/^[A-Za-z]*\s[A-Za-z]*$/', $jmeno) || strlen($jmeno) < 3) {
@@ -61,18 +65,19 @@ class ProfileCtrl extends Controller
 
         // aktualizace v databazi
         if ($this->userManager->updateJmeno($_SESSION['user_id'], $jmeno)) {
-            $_SESSION['user']['jmeno'] = $jmeno;
+            $_SESSION['user']['jmeno'] = $jmeno; // update session flagu
             $this->jsonResponse(['success' => true, 'message' => 'Jméno bylo úspěšně změněno.', 'jmeno' => $jmeno]);
         } else $this->jsonResponse(['success' => false, 'message' => 'Nepodařilo se změnit jméno.'], 500);
     }
 
+    // update nicku
     public function updateNick(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatný dotaz.'], 405);
         }
 
-        $nick = trim($_POST['nick'] ?? '');
+        $nick = htmlspecialchars(trim($_POST['nick'] ?? ''), ENT_QUOTES, 'UTF-8');
 
         // validace
         if (empty($nick) ||
@@ -80,18 +85,19 @@ class ProfileCtrl extends Controller
             || strlen($nick) < 5 || strlen($nick) > 15
         ) $this->jsonResponse(['success' => false, 'message' => 'Neplatný nick.'], 400);
 
-        // kontrola duplikatu
+        // kontrola duplicity - nick je unique
         if ($this->userManager->nickExists($nick, $_SESSION['user_id'])) {
             $this->jsonResponse(['success' => false, 'message' => 'Tento nick již existuje.'], 400);
         }
 
         // update nicku
         if ($this->userManager->updateNick($_SESSION['user_id'], $nick)) {
-            $_SESSION['user']['nick'] = $nick;
+            $_SESSION['user']['nick'] = $nick; // update session flagu
             $this->jsonResponse(['success' => true, 'message' => 'Nick byl úspěšně změněn.', 'nick' => $nick]);
         } else $this->jsonResponse(['success' => false, 'message' => 'Nepodařilo se změnit nick.'], 500);
     }
 
+    // update hesla
     public function updatePassword(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -120,11 +126,13 @@ class ProfileCtrl extends Controller
                 400);
         }
 
+        // validace velkych/malych pismen
         if (!preg_match('/[a-z]/', $new_pwd) || !preg_match('/[A-Z]/', $new_pwd)) {
             $this->jsonResponse(['success' => false, 'message' => 'Nové heslo musí obsahovat malé a velké písmeno.'],
                 400);
         }
 
+        // validace cisla a spec. znaku
         if (!preg_match('/[0-9]/', $new_pwd) || !preg_match('/[!@#$%^&*(),.?":{}|<>]/', $new_pwd)) {
             $this->jsonResponse(['success' => false, 'message' => 'Nové heslo musí obsahovat číslo a spec. znak.'],
                 400);
@@ -143,25 +151,26 @@ class ProfileCtrl extends Controller
         }
     }
 
+    // nahrani profilove fotky
     public function uploadPicture(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatný dotaz.'], 405);
         }
 
+        // validace souboru
         if (!isset($_FILES['profile_picture']) || $_FILES['profile_picture']['error'] !== UPLOAD_ERR_OK) {
             $this->jsonResponse(['success' => false, 'message' => 'Nepodařilo se nahrát obrázek.']);
         }
 
         $file_pic = $_FILES['profile_picture'];
 
-        // validace formatu
-        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']; // povolene formaty
+        $finfo = finfo_open(FILEINFO_MIME_TYPE); // ziskame typ souboru
         $mime_type = finfo_file($finfo, $file_pic['tmp_name']);
         finfo_close($finfo);
 
-        if (!in_array($mime_type, $allowed_types)) {
+        if (!in_array($mime_type, $allowed_types)) { // validace formatu
             $this->jsonResponse(['success' => false, 'message' => 'Nepodporovaný formát obrázku. Použijte PNG, JPG, JPEG nebo WEBP.'], 400);
         }
 
@@ -194,7 +203,7 @@ class ProfileCtrl extends Controller
             // update v databazi
             $user_id = $_SESSION['user_id'];
             if ($this->userManager->updateProfilePic($user_id, $profile_pic_path)) {
-                $_SESSION['user']['profile_picture'] = $profile_pic_path;
+                $_SESSION['user']['profile_picture'] = $profile_pic_path; // update session flagu
 
                 $this->jsonResponse(['success' => true, 'message' => 'Fotka byla úspěšně změněna.']);
             } else $this->jsonResponse(['success' => false, 'message' => 'Fotku se nepodařilo uložit.'], 400);

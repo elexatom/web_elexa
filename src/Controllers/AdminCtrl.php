@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controllers;
 
@@ -13,11 +14,10 @@ class AdminCtrl extends Controller
     public function __construct($twig)
     {
         parent::__construct($twig);
-
         // uzivatel musi byt prihlasen
         if (!isset($_SESSION['user'])) $this->redirect('/auth/login');
         // uzivatel musi byt admin
-        if ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'superadmin') $this->redirect('/');
+        if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'superadmin')) $this->redirect('/');
     }
 
     public function process(array $params): void
@@ -44,21 +44,29 @@ class AdminCtrl extends Controller
         $this->data['articles'] = $this->articleManager->getAllArticles();               // vsechny clanky
         $this->data['reviews'] = $this->reviewManager->getAllReviews();                  // vsechny recenze
         $this->data['reviewers'] = $this->userManager->getUsersByRole('recenzent'); // vsichni recenzenti
-
     }
 
+    // nastaveni statusu clanku
     private function setArticleStatus(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatný dotaz.'], 405);
         }
 
-        $art_id = trim($_POST['article_id'] ?? '');
+        $art_id = $_POST['article_id'] ?? '';
         $status = trim($_POST['status'] ?? '');
+
+        // whitelist statusu
+        $allowed_statuses = ['prijato', 'zamitnuto', 'cekajici'];
 
         // validace dat
         if (empty($art_id) || empty($status)) {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatné data.'], 400);
+        }
+
+        // validace statusu
+        if (!in_array($status, $allowed_statuses, true)) {
+            $this->jsonResponse(['success' => false, 'message' => 'Neplatný status článku.'], 400);
         }
 
         if ($this->articleManager->setArticleStatus($art_id, $status)) {
@@ -67,15 +75,19 @@ class AdminCtrl extends Controller
             $this->jsonResponse(['success' => false, 'message' => sprintf("Článek se nepodařilo nastavit na: %s", $status)]);
     }
 
+    // pridat recenzenta k clanku
     private function addReviewer(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatný dotaz.'], 405);
         }
 
-        $art_id = trim($_POST['article_id'] ?? '');
-        $rec_id = trim($_POST['reviewer_id'] ?? '');
+        $art_id_raw = trim($_POST['article_id'] ?? '');
+        $rec_id_raw = trim($_POST['reviewer_id'] ?? '');
+        $art_id = filter_var($art_id_raw, FILTER_VALIDATE_INT);
+        $rec_id = filter_var($rec_id_raw, FILTER_VALIDATE_INT);
 
+        // validace dat
         if (empty($art_id) || empty($rec_id)) {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatné data.'], 400);
         }
@@ -90,13 +102,15 @@ class AdminCtrl extends Controller
         } else $this->jsonResponse(['success' => true, 'message' => "Recenzenta se nepovedlo přidat."]);
     }
 
+    // smazat recenzi / prirazeni
     private function deleteReview(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatný dotaz.'], 405);
         }
 
-        $rec_id = trim($_POST['review_id'] ?? '');
+        $rec_id_raw = trim($_POST['review_id'] ?? '');
+        $rec_id = filter_var($rec_id_raw, FILTER_VALIDATE_INT);
 
         // validace dat
         if (empty($rec_id)) $this->jsonResponse(['success' => false, 'message' => 'Neplatné data.'], 400);

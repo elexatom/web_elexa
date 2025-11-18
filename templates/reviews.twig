@@ -1,3 +1,5 @@
+{# Template - /reviews - sprava recenzi pro recenzenta #}
+
 {% extends 'layout.twig' %}
 
 {% block content %}
@@ -7,22 +9,18 @@
     {% set denied = 0 %}
 
     {% for a in articles %}
-        {% set article_reviews = reviews|filter(r => r.clanek_id == a.clanek_id) %}
-        {% if article_reviews|length == 0 %}
+        {% if a.status == 'prijato' %}
+            {% set accepted = accepted + 1 %}
+        {% elseif a.status == 'zamitnuto' %}
+            {% set denied = denied + 1 %}
         {% else %}
+            {% set pending = pending + 1 %}
         {% endif %}
-        {% set first_review = article_reviews|first %}
-        {% if first_review.status == 'prijato' %}
-        {% elseif first_review.status == 'zamitnuto' %}
-        {% endif %}
-        {% set denied = denied + 1 %}
-        {% set accepted = accepted + 1 %}
-        {% set pending = pending + 1 %}
     {% endfor %}
 
     <div>
         <section class="container mx-auto px-4 py-8">
-            <!-- Header -->
+            <!-- Hlavicka -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
                     <h1 class="text-3xl font-bold">Moje recenze</h1>
@@ -57,21 +55,28 @@
                 </a>
             </div>
 
-            <!-- Articles List -->
+            <!-- Seznam článků -->
             <div class="space-y-4" id="articlesContainer">
                 {% for article in articles %}
                     {% set status = article.status %}
+                    {% if status == 'prijato' %}
+                        {% set filter_status = 'accepted' %}
+                    {% elseif status == 'zamitnuto' %}
+                        {% set filter_status = 'denied' %}
+                    {% else %}
+                        {% set filter_status = 'pending' %}
+                    {% endif %}
 
                     <div class="card bg-base-100 shadow-xl article-card"
                          data-status="{{ status }}"
                          data-article-id="{{ article.clanek_id }}"
                          data-review-id="{{ article.recenze_id }}">
                         <div class="card-body">
-                            <!-- Article Info -->
+                            <!-- Info -->
                             <div class="flex-1">
                                 <h2 class="card-title">{{ article.nazev_clanku }}</h2>
 
-                                <!-- Status Badge -->
+                                <!-- Status -->
                                 {% if status == 'prijato' %}
                                     <div class="badge badge-success gap-1 mt-2">
                                         <i data-lucide="check" class="w-3 h-3"></i>
@@ -100,7 +105,7 @@
                                 </div>
                             </div>
 
-                            <!-- Existing Review Summary -->
+                            <!-- Souhrn existujici recenze -->
                             <div class="review-summary mt-4 pt-4 border-t border-base-300">
                                 <h3 class="font-semibold mb-3 flex items-center gap-2">
                                     <i data-lucide="star" class="w-4 h-4"></i>
@@ -155,16 +160,17 @@
                                     {% endif %}
                                 </div>
 
-                                <!-- Hidden data for loading into form -->
+                                <!-- hidden data pro formular -->
                                 <div class="review-data hidden"
                                      data-comment="{{ article.komentar ?? '' }}"
                                      data-cat1="{{ article.cat1 }}"
                                      data-cat2="{{ article.cat2 }}"
                                      data-cat3="{{ article.cat3 }}"
-                                     data-cat4="{{ article.cat4 }}"></div>
+                                     data-cat4="{{ article.cat4 }}">
+                                </div>
                             </div>
 
-                            <!-- Review Form (Hidden by default) -->
+                            <!-- Formular recenze -->
                             <div class="review-form-container hidden mt-4 pt-4 border-t border-base-300 space-y-4">
                                 <form class="reviewForm space-y-4">
                                     <input type="hidden" class="article-id" value="{{ article.clanek_id }}"/>
@@ -234,7 +240,7 @@
                                         </div>
                                     </div>
 
-                                    <!-- Comment -->
+                                    <!-- Komentar -->
                                     <div>
                                         <label class="label" for="comment-{{ article.clanek_id }}">
                                             <span class="label-text">Komentář</span>
@@ -254,20 +260,22 @@
                                 </form>
                             </div>
 
-                            <!-- Action Button -->
-                            <div class="card-actions mt-4">
-                                <button class="btn btn-sm btn-outline edit-review-btn"
-                                        data-article-id="{{ article.clanek_id }}">
-                                    <i data-lucide="edit" class="w-4 h-4"></i>
-                                    {% if my_review %}Upravit recenzi{% else %}Recenzovat{% endif %}
-                                </button>
-                            </div>
+                            {% if article.status != "prijato" %}
+                                <!-- Upravit -->
+                                <div class="card-actions mt-4">
+                                    <button class="btn btn-sm btn-outline edit-review-btn"
+                                            data-article-id="{{ article.clanek_id }}">
+                                        <i data-lucide="edit" class="w-4 h-4"></i>
+                                        {% if my_review %}Upravit recenzi{% else %}Recenzovat{% endif %}
+                                    </button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
             </div>
 
-            <!-- Empty State -->
+            <!-- Prazdny stav -->
             <div id="emptyState" class="hidden text-center py-12">
                 <i data-lucide="inbox" class="w-16 h-16 mx-auto opacity-30 mb-4"></i>
                 <p class="text-lg opacity-70">Zatím nemáte žádné články k recenzi</p>

@@ -1,7 +1,10 @@
+{# Template - /home - domovská stránka #}
+
 {% extends 'layout.twig' %}
 
 {% block content %}
     <section>
+        <!-- Hero -->
         <div class="hero bg-base-200 h-96">
             <div class="hero-content text-center">
                 <div class="max-w-md">
@@ -10,12 +13,14 @@
                         Objevte svět architektury s DigiArch - Forum kde se špičkové technologie potkávají s designem,
                         aby vytvořily prostředí pro život zítřka.
                     </p>
-                    <a href="/auth/register">
-                        <button class="btn btn-primary">Registrace</button>
+                    <a href="/auth/register" class="btn btn-primary">
+                        Registrace
                     </a>
                 </div>
             </div>
         </div>
+
+        <!-- Úvodní text -->
         <h1 class="text-base-content text-3xl flex justify-center p-5">Úvod</h1>
         <div class="p-6 justify-center flex">
             <p class="text-base-content prose lg:prose-xl text-justify">
@@ -34,8 +39,9 @@
             </p>
         </div>
 
+        <!-- Články -->
         <div class="p-6 justify-center flex items-center mt-12">
-        <h2 class="text-3xl">Články</h2>
+            <h2 class="text-3xl">Články</h2>
         </div>
 
         <div class="p-6 justify-center flex items-center mb-12">
@@ -47,8 +53,9 @@
                             <span>{{ article.datum }}</span>
                             <p>{{ article.abstrakt }}</p>
                             <div class="card-actions justify-end">
-                                <a href="{{ article.pdf_odkaz }}" target="_blank" rel="noopener noreferrer">
-                                    <button class="btn btn-primary">Otevřít článek (PDF)</button>
+                                <a href="{{ article.pdf_odkaz }}" target="_blank" rel="noopener noreferrer"
+                                   class="btn btn-primary">
+                                    Otevřít článek (PDF)
                                 </a>
                             </div>
                         </div>

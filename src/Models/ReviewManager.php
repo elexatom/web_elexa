@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
@@ -16,6 +17,7 @@ class ReviewManager
         $this->articleManager = $articleManager;
     }
 
+    // vrati vsechny recenze
     public function getAllReviews(): array
     {
         return Db::query('
@@ -23,6 +25,7 @@ class ReviewManager
         ');
     }
 
+    // vrati vsechny recenze uzivatele dle ID
     public function getAllReviewsForAuthor(int $author_id): array
     {
         $articles = $this->articleManager->getAllArticlesByAuthor($author_id);
@@ -42,6 +45,7 @@ class ReviewManager
         return $reviews;
     }
 
+    // pridani recenze
     public function addReview(int $article_id, int $reviwer_id): bool
     {
         try {
@@ -58,6 +62,7 @@ class ReviewManager
         }
     }
 
+    // vrati recenze k clanku dle ID pro recenzenta dle ID
     public function getReviewByArticleAndReviewer(int $article_id, int $reviewer_id): array|bool
     {
         try {
@@ -72,6 +77,7 @@ class ReviewManager
         }
     }
 
+    // smaze recenzi dle ID
     public function deleteReview(int $review_id): bool
     {
         try {
@@ -87,6 +93,7 @@ class ReviewManager
         }
     }
 
+    // vrati vsechny recenze recenzenta dle ID
     public function getAllReviewsByUser(int $user_id): array|bool
     {
         try {
@@ -101,6 +108,7 @@ class ReviewManager
         }
     }
 
+    // vrati vsechny clanky a recenze pro recenzenta dle ID
     public function getAllArticlesForReviewer(int $rec_id): array
     {
         $reviews = $this->getAllReviewsByUser($rec_id);
@@ -123,6 +131,7 @@ class ReviewManager
         return array_unique($articles, SORT_REGULAR);
     }
 
+    // upravi recenzi dle ID
     public function updateReview(int $review_id, int $cat1, int $cat2, int $cat3, int $cat4, string $komentar): bool
     {
         try {

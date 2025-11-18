@@ -1,13 +1,13 @@
-// File: `templates/scripts/reviews.js`
-
-// Toast notifikace
+// ------------------------------------------------------- //
+//  ------------------ Toast notifikace ------------------ //
+// ------------------------------------------------------- //
 function showToast(message, type = "success") {
     const $toast = $("#messageToast")
     const $text = $("#messageText")
 
-    $text.text(message)
+    $text.text(message) // zmenit text
 
-    const alertClass =
+    const alertClass = // priradit class dle typu
         type === "error"
             ? "alert-error"
             : type === "info"
@@ -15,14 +15,16 @@ function showToast(message, type = "success") {
                 : "alert-success"
 
     const $alert = $toast.find(".alert")
-    $alert
+    $alert  // nastavit class
         .removeClass("alert-success alert-error alert-info")
         .addClass(alertClass)
 
+    // pokud je toast viditelny, zobrazit a zmenit jeho pozici
     if ($toast.is(":visible")) {
         $toast.stop(true, true).hide()
     }
 
+    // animace
     $toast
         .removeClass("hidden")
         .css({opacity: 0, bottom: "-50px", position: "fixed", right: "20px", "z-index": 9999})
@@ -34,21 +36,24 @@ function showToast(message, type = "success") {
         })
 }
 
-// AJAX helper
+// ------------------------------------------------------- //
+//  ------------------- AJAX Helper ---------------------- //
+// ------------------------------------------------------- //
 async function ajaxRequest(url, method, data, isFormData = false) {
     try {
         const response = await $.ajax({
             url,
             type: method,
-            data: isFormData ? data : $.param(data),
-            processData: !isFormData,
+            data: isFormData ? data : $.param(data), // serialize form data na query string
+            processData: !isFormData,   // pokud se jedna o FormData, nezpracovavat
             contentType: isFormData ? false : "application/x-www-form-urlencoded; charset=UTF-8",
             dataType: "json"
         })
 
+        // odpoved
         showToast(response.message || "Operace proběhla úspěšně.", "success")
         return response
-    } catch (xhr) {
+    } catch (xhr) { // neuspech
         let res = {}
         try {
             res = xhr.responseJSON || JSON.parse(xhr.responseText)
@@ -60,44 +65,55 @@ async function ajaxRequest(url, method, data, isFormData = false) {
     }
 }
 
-// Filter articles by status
+// ------------------------------------------------------- //
+//  ------------- Tabs - Rozdeleni statusu --------------- //
+// ------------------------------------------------------- //
 $(".tabs .tab").on("click", function () {
     const $tab = $(this)
     const filter = $tab.data("filter")
 
-    // Switch active tab
+    // zmenit aktivni tab
     $(".tabs .tab").removeClass("tab-active")
     $tab.addClass("tab-active")
 
-    // Filter articles
+    // map statusu
+    const statusMap = {
+        "accepted": "prijato",
+        "denied": "zamitnuto",
+        "pending": "cekajici"
+    }
+
+    // filtrovat karty
     if (filter === "all") {
         $(".article-card").show()
     } else {
         $(".article-card").hide()
-        $(`.article-card[data-status="${filter}"]`).show()
+        const actualStatus = statusMap[filter]
+        $(`.article-card[data-status="${actualStatus}"]`).show()
     }
 
-    // Show empty state if no articles
+    // zkontrolovat prazdny stav
     checkEmptyState()
 })
 
-// Open review form inline
+// ------------------------------------------------------- //
+//  ------------ Formular - Recenze - inline ------------- //
+// ------------------------------------------------------- //
 $(document).on("click", ".edit-review-btn", function () {
     const $btn = $(this)
     const $card = $btn.closest(".article-card")
     const $formContainer = $card.find(".review-form-container")
-    const $reviewSummary = $card.find(".review-summary")
     const $form = $card.find(".reviewForm")
-    // prefer data on the card, fallback to hidden inputs inside the form
     const articleId = $card.data("article-id") || $form.find(".article-id").val()
     const reviewId = $card.data("review-id") || $form.find(".review-id").val()
 
-    // Toggle form visibility
+    // prepnout viditelnost formulare
     $formContainer.toggleClass("hidden")
 
+    // tag pro editor
     const commentEditorId = `comment-${articleId}`
 
-    // Load existing review data into form fields and editor
+    // naplnit formular existujicimi daty
     if (reviewId) {
         const $reviewData = $card.find(".review-data")
         const comment = $reviewData.data("comment") || ""
@@ -111,19 +127,21 @@ $(document).on("click", ".edit-review-btn", function () {
         if (cat3) $form.find(`input[name='cat3'][value='${cat3}']`).prop("checked", true)
         if (cat4) $form.find(`input[name='cat4'][value='${cat4}']`).prop("checked", true)
 
+        // nastavit editor
         const editor = (typeof tinymce !== "undefined") ? tinymce.get(commentEditorId) : null
         if (editor) {
             editor.setContent(comment)
         } else {
-            // Fallback if editor not available yet
+            // fallback na hidden input
             $form.find(`#${commentEditorId}`).val(comment)
         }
     }
 
+    // ikony
     lucide.createIcons()
 })
 
-// Cancel review form
+// schova inline formulare a zobrazi pouze summary
 $(document).on("click", ".cancel-review-btn", function () {
     const $btn = $(this)
     const $card = $btn.closest(".article-card")
@@ -138,7 +156,7 @@ $(document).on("click", ".cancel-review-btn", function () {
     lucide.createIcons()
 })
 
-// Update rating display
+// aktualizace hodnot recenze
 $(".article-card").on("change", ".rating input[type='radio']", function () {
     const name = $(this).attr("name")
     const value = $(this).val()
@@ -146,22 +164,22 @@ $(".article-card").on("change", ".rating input[type='radio']", function () {
     $card.find(`.${name}-value`).text(value)
 })
 
-// Save review
+// ------------------------------------------------------- //
+//  ----------------- Formular - Odeslat ----------------- //
+// ------------------------------------------------------- //
 $(document).on("submit", ".reviewForm", async function (e) {
     e.preventDefault()
 
     const $form = $(this)
     const $card = $form.closest(".article-card")
 
-    // prefer data on the card, fallback to hidden inputs inside the form
+    // preferovat data z karty, fallback na hidden inputy
     const articleId = $card.data("article-id") || $form.find(".article-id").val()
     const reviewId = $card.data("review-id") || $form.find(".review-id").val()
     const commentEditorId = `comment-${articleId}`
     const commentContent = (typeof tinymce !== "undefined" && tinymce.get(commentEditorId))
         ? tinymce.get(commentEditorId).getContent()
         : ($form.find(`#${commentEditorId}`).val() || "")
-
-    console.log("articleId:", articleId, "reviewId:", reviewId)
 
     const formData = {
         article_id: articleId,
@@ -173,15 +191,17 @@ $(document).on("submit", ".reviewForm", async function (e) {
         komentar: commentContent
     }
 
+    // validace
     if (!formData.cat1 || !formData.cat2 || !formData.cat3 || !formData.cat4) {
         showToast("Prosím vyplňte všechny kategorie.", "error")
         return
     }
 
+    // ajax request
     const res = await ajaxRequest("/reviews/save-review", "POST", formData)
 
-    if (res) {
-        // Use the submitted values as the new display values (server response fallback)
+    if (res) { // uspech
+        // pouzit odeslane udaje jako nove
         const newCat1 = formData.cat1
         const newCat2 = formData.cat2
         const newCat3 = formData.cat3
@@ -189,11 +209,11 @@ $(document).on("submit", ".reviewForm", async function (e) {
         const newComment = formData.komentar || ""
         const newReviewId = res.review_id || reviewId || $card.data("review-id") || ""
 
-        // Update card attributes
-        $card.attr("data-status", "accepted")
+        // aktualizovat data-atributy karty
+        $card.attr("data-status", "prijato")
         $card.attr("data-review-id", newReviewId)
 
-        // Update hidden .review-data attributes so editor load uses up-to-date values
+        // aktualizovat skryta data v .review-data
         const $reviewData = $card.find(".review-data")
         $reviewData.attr("data-cat1", newCat1)
             .attr("data-cat2", newCat2)
@@ -201,7 +221,7 @@ $(document).on("submit", ".reviewForm", async function (e) {
             .attr("data-cat4", newCat4)
             .attr("data-comment", newComment)
 
-        // Update the summary star displays (there are four .rating.rating-sm blocks in order)
+        // aktualizovat ratingy v summary
         const cats = [newCat1, newCat2, newCat3, newCat4]
         $card.find(".review-summary .rating.rating-sm").each(function (idx) {
             const val = parseInt(cats[idx] || 0, 10)
@@ -212,7 +232,7 @@ $(document).on("submit", ".reviewForm", async function (e) {
             $(this).html(html)
         })
 
-        // Update or insert the comment block in the summary
+        // akutalizovat komentar v summary
         const $existingCommentBlock = $card.find(".review-summary .pt-3.border-t")
         if (newComment) {
             const commentHtml = `<div class="pt-3 border-t border-base-300"><p class="text-sm"><strong>Komentář:</strong></p><p class="text-sm opacity-70 mt-1">${newComment}</p></div>`
@@ -227,7 +247,7 @@ $(document).on("submit", ".reviewForm", async function (e) {
             }
         }
 
-        // Hide form and update button text
+        // schovat formular a zobrazit summary
         $card.find(".review-form-container").addClass("hidden")
         $card.find(".edit-review-btn").text("Upravit recenzi")
 
@@ -235,7 +255,7 @@ $(document).on("submit", ".reviewForm", async function (e) {
     }
 })
 
-// Check if there are articles to display
+// kontrola zda lze zobrazit nejake recenze
 function checkEmptyState() {
     const visibleCards = $(".article-card:visible").length
     if (visibleCards === 0) {
@@ -245,12 +265,14 @@ function checkEmptyState() {
     }
 }
 
-// Initialize on page load
+// ------------------------------------------------------- //
+//  -------------- Inicializace - TinyMCE ---------------- //
+// ------------------------------------------------------- //
 $(document).ready(function () {
     lucide.createIcons()
     checkEmptyState()
 
-    // Initialize TinyMCE for every comment textarea
+    // inicilizace editoru pro komentare - TinyMCE
     if (typeof tinymce !== "undefined") {
         tinymce.init({
             selector: "textarea.review-comment",
@@ -264,13 +286,13 @@ $(document).ready(function () {
             height: 400,
             setup: function (editor) {
                 editor.on("init", function () {
-                    // populate editor content from corresponding .review-data if present
-                    const id = editor.id // should be comment-<articleId>
+                    // naplnit editor daty z .review-data pokud exsituje
+                    const id = editor.id // comment-<articleId>
                     const articleId = id.replace("comment-", "")
                     const $card = $(`.article-card[data-article-id="${articleId}"]`)
                     const $reviewData = $card.find(".review-data")
                     const comment = $reviewData.data("comment") || ""
-                    // set content
+                    // nastavit obsah
                     editor.setContent(comment)
                 })
             }

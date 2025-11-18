@@ -1,3 +1,5 @@
+{# Template - /profile - profilová stránka #}
+
 {% extends 'layout.twig' %}
 
 {% block content %}
@@ -13,7 +15,7 @@
                 </div>
             </div>
 
-            <!-- Left Column: Profile Picture & Basic Info -->
+            <!-- Profilová fotka a základní informace -->
             <div class="lg:col-span-1">
                 <div class="card bg-base-100 shadow-xl">
                     <div class="card-body items-center text-center">
@@ -27,7 +29,7 @@
                         <h2 id="jmeno" class="card-title mt-4">{{ user.jmeno }}</h2>
                         <p id="nick" class="text-sm opacity-70">@{{ user.nick }}</p>
 
-                        <!-- Upload Profile Picture -->
+                        <!-- Upload PP -->
                         <div class="w-full mt-4" id="uploadForm">
                             <input type="file" name="profile_picture" id="profilePictureInput"
                                    accept="image/jpeg,image/png,image/jpg,image/webp"
@@ -41,7 +43,7 @@
 
                         <div class="divider"></div>
 
-                        <!-- User Info -->
+                        <!-- Info -->
                         <div class="w-full text-left space-y-2">
                             <div class="flex items-center gap-2 text-sm">
                                 <i data-lucide="mail" class="h-4 w-4 opacity-70"></i>
@@ -64,7 +66,7 @@
                 </div>
             </div>
 
-            <!--- pravy sloupec - upravy -------------------------------------------->
+            <!-- Úpravy -->
             <div class="lg:col-span-2 space-y-6">
                 <!------------------------------------------------------------------->
                 <!---------------------------- Upravit Jmeno ------------------------>
@@ -106,7 +108,6 @@
                 <!------------------------------------------------------------------->
                 <!---------------------------- Upravit Nick ------------------------->
                 <!------------------------------------------------------------------->
-
                 <div class="card bg-base-100 shadow-xl">
                     <div class="card-body">
                         <h3 class="card-title">

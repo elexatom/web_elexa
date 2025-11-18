@@ -1,11 +1,11 @@
-// Toast notification helper
+// ------------------------------------------------------- //
+//  ------------------ Toast notifikace ------------------ //
+// ------------------------------------------------------- //
 function showToast(message, type = "success") {
     const $toast = $("#messageToast")
     const $text = $("#messageText")
-
-    $text.text(message)
-
-    const alertClass =
+    $text.text(message) // zmenit text
+    const alertClass = // priradit class dle typu
         type === "error"
             ? "alert-error"
             : type === "info"
@@ -13,7 +13,7 @@ function showToast(message, type = "success") {
                 : "alert-success"
 
     const $alert = $toast.find(".alert")
-    $alert
+    $alert  // nastavit class
         .removeClass("alert-success alert-error alert-info")
         .addClass(alertClass)
 
@@ -21,6 +21,7 @@ function showToast(message, type = "success") {
         $toast.stop(true, true).hide()
     }
 
+    // pokud je toast viditelny, zobrazit a zmenit jeho pozici
     $toast
         .removeClass("hidden")
         .css({opacity: 0, bottom: "-50px", position: "fixed", right: "20px", "z-index": 9999})
@@ -32,21 +33,25 @@ function showToast(message, type = "success") {
         })
 }
 
-// AJAX helper
+
+// ------------------------------------------------------- //
+//  -------------------- AJAX helper --------------------- //
+// ------------------------------------------------------- //
 async function ajaxRequest(url, method, data, isFormData = false) {
     try {
-        const response = await $.ajax({
+        const response = await $.ajax({ // ajax request
             url,
             type: method,
             data: isFormData ? data : $.param(data),
-            processData: !isFormData,
+            processData: !isFormData,   // pokud se jedna o FormData, nezpracovavat
             contentType: isFormData ? false : "application/x-www-form-urlencoded; charset=UTF-8",
             dataType: "json"
         })
 
+        // odpoved
         showToast(response.message || "Operace proběhla úspěšně.", "success")
         return response
-    } catch (xhr) {
+    } catch (xhr) { // nastal problem
         let res = {}
         try {
             res = xhr.responseJSON || JSON.parse(xhr.responseText)
@@ -58,7 +63,9 @@ async function ajaxRequest(url, method, data, isFormData = false) {
     }
 }
 
-// upravit pocty rozdeleni
+// ------------------------------------------------------- //
+//  -------------- Tabs - Rozdeleni stavu ---------------- //
+// ------------------------------------------------------- //
 function updateTabCounts() {
     const total = $(".article-card").length
     const pending = $(".article-card[data-status=\"cekajici\"]").length
@@ -88,12 +95,15 @@ $(".tab").on("click", function () {
     }
 })
 
-// Prijmout clanek
+// ------------------------------------------------------- //
+//  ------------------ Prijmout Clanek ------------------- //
+// ------------------------------------------------------- //
 $(document).on("click", ".accept-article-btn", async function () {
     const $btn = $(this)
     const articleId = $btn.data("article-id")
-    if (!confirm("Opravdu chcete přijmout tento článek?")) return
+    if (!confirm("Opravdu chcete přijmout tento článek?")) return // overeni
 
+    // ajax request
     const res = await ajaxRequest("/admin/change-status", "POST", {
         article_id: articleId,
         status: "prijato"
@@ -105,12 +115,15 @@ $(document).on("click", ".accept-article-btn", async function () {
     }
 })
 
-// Prehodnotit clanek
+// ------------------------------------------------------- //
+//  ----------------- Prehodnotit Clanek ----------------- //
+// ------------------------------------------------------- //
 $(document).on("click", ".reconsider-article-btn", async function () {
     const $btn = $(this)
     const articleId = $btn.data("article-id")
-    if (!confirm("Opravdu chcete vrátit článek k přehodnocení?")) return
+    if (!confirm("Opravdu chcete vrátit článek k přehodnocení?")) return // overeni
 
+    // ajax request
     const res = await ajaxRequest("/admin/change-status", "POST", {
         article_id: articleId,
         status: "cekajici"
@@ -122,13 +135,16 @@ $(document).on("click", ".reconsider-article-btn", async function () {
     }
 })
 
-// Zamitnout clanek
+// ------------------------------------------------------- //
+//  ------------------ Zamitnout Clanek ------------------ //
+// ------------------------------------------------------- //
 $(document).on("click", ".decline-article-btn", async function () {
     const $btn = $(this)
     const articleId = $btn.data("article-id")
 
-    if (!confirm("Opravdu chcete zamítnout tento článek?")) return
+    if (!confirm("Opravdu chcete zamítnout tento článek?")) return // overeni
 
+    // ajax request
     const res = await ajaxRequest("/admin/change-status", "POST", {
         article_id: articleId,
         status: "zamitnuto"
@@ -140,7 +156,10 @@ $(document).on("click", ".decline-article-btn", async function () {
     }
 })
 
-// Pridat recenzenta - modal
+// ------------------------------------------------------- //
+//  ----------------- Pridat recenzenta ------------------ //
+// ------------------------------------------------------- //
+// Modal
 $(document).on("click", ".add-reviewer-btn", function () {
     const $btn = $(this)
     const articleId = $btn.data("article-id")
@@ -149,7 +168,7 @@ $(document).on("click", ".add-reviewer-btn", function () {
     document.getElementById("addReviewerModal").showModal()
 })
 
-// Pridat recenzenta - odeslani
+// Submit
 $("#addReviewerForm").on("submit", async function (e) {
     e.preventDefault()
 
@@ -163,6 +182,7 @@ $("#addReviewerForm").on("submit", async function (e) {
         return
     }
 
+    // ajax request
     const res = await ajaxRequest("/admin/assign", "POST", formData)
 
     if (res) {
@@ -171,26 +191,27 @@ $("#addReviewerForm").on("submit", async function (e) {
     }
 })
 
-// Odstranit recenzi
+// ------------------------------------------------------- //
+//  ------------------ Odstranit recenzi ----------------- //
+// ------------------------------------------------------- //
 $(document).on("click", ".remove-review-btn", async function () {
     const $btn = $(this)
     const reviewId = $btn.data("review-id")
 
-    if (!confirm("Opravdu chcete odstranit tuto recenzi?")) {
-        return
-    }
+    if (!confirm("Opravdu chcete odstranit tuto recenzi?")) return // overeni
 
+    // ajax request
     const res = await ajaxRequest("/admin/delete-review", "POST", {review_id: reviewId})
 
-    if (res) {
+    if (res) { // uspech
         const $row = $btn.closest("tr")
         $row.fadeOut(400, function () {
             $(this).remove()
 
-            // Update counts after removing
+            // upravit pocty v rozdeleni
             updateTabCounts()
 
-            // If no more reviews, show empty state
+            // pokud uz nejsou zadne recenze, zobrazit hlasku
             const $tbody = $btn.closest("tbody")
             if ($tbody.find("tr").length === 0) {
                 const $reviewsSection = $btn.closest(".space-y-3")
@@ -207,7 +228,7 @@ $(document).on("click", ".remove-review-btn", async function () {
     }
 })
 
-// Clear modal on close
+// vycistit formular po uzavreni modalu
 const $modal = document.getElementById("addReviewerModal")
 if ($modal) {
     $modal.addEventListener("close", function () {
@@ -216,22 +237,24 @@ if ($modal) {
     })
 }
 
+// aktualizace stavu clanku
 function updateArticleCard(articleId, newStatus) {
-    const $card = $(`.article-card[data-article-id="${articleId}"]`)
+    const $card = $(`.article-card[data-article-id="${articleId}"]`) // element karty clanku
 
-    // Update data attribute
+    // update data-attribute
     $card.attr("data-status", newStatus)
 
-    // Update badge
+    // definice badges
     const badgeHTML = {
         "cekajici": "<div class=\"badge badge-warning gap-1\"><i data-lucide=\"clock\" class=\"w-3 h-3\"></i>Čeká na rozhodnutí</div>",
         "prijato": "<div class=\"badge badge-success gap-1\"><i data-lucide=\"check\" class=\"w-3 h-3\"></i>Přijato</div>",
         "zamitnuto": "<div class=\"badge badge-error gap-1\"><i data-lucide=\"x\" class=\"w-3 h-3\"></i>Zamítnuto</div>"
     }
 
+    // aktualizovat badge
     $card.find(".card-title").siblings(".badge").replaceWith(badgeHTML[newStatus])
 
-    // Update action buttons
+    // definice tlacitek
     const buttonsHTML = newStatus === "cekajici"
         ? `<div class="flex gap-2">
              <button class="btn btn-success btn-sm gap-1 accept-article-btn" data-article-id="${articleId}">
@@ -245,10 +268,10 @@ function updateArticleCard(articleId, newStatus) {
              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>Přehodnotit
            </button>`
 
-    // Replace the entire container
+    // aktualizovat tlacitka (cely container)
     $card.find(".action-buttons-container").html(buttonsHTML)
 
-    // Reinitialize lucide icons
+    // ikony
     lucide.createIcons()
 }
 

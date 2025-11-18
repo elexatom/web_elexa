@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
@@ -9,6 +10,7 @@ use PDOException;
  */
 class UserManager
 {
+    // vrati vsechny uzivatele
     public function getAllUsers(): array
     {
         return Db::query('
@@ -16,6 +18,7 @@ class UserManager
         ');
     }
 
+    // zmeni jmeno uzivatele
     public function updateJmeno(int $user_id, string $jmeno): bool
     {
         return (is_array(Db::query(
@@ -24,6 +27,7 @@ class UserManager
         )));
     }
 
+    // vraci true, pokud nick jiz existuje (krome uzivatele s vynechat_uid)
     public function nickExists(string $nick, int $vynechat_uid): bool
     {
         $result = Db::query(
@@ -33,6 +37,7 @@ class UserManager
         return isset($result[0]['COUNT(*)']) && $result[0]['COUNT(*)'] > 0;
     }
 
+    // zmeni nick uzivatele
     public function updateNick(int $user_id, string $nick): bool
     {
         return (is_array(Db::query(
@@ -41,6 +46,7 @@ class UserManager
         )));
     }
 
+    // vraci true, pokud je heslo spravne
     public function verifyCurrentPwd(int $user_id, string $password): bool
     {
         $result = Db::query(
@@ -50,6 +56,7 @@ class UserManager
         return $result['heslo'] && password_verify($password, $result['heslo']);
     }
 
+    // zmeni heslo uzivatele
     public function updatePassword(int $user_id, string $newPassword): bool
     {
         $hashed = password_hash($newPassword, PASSWORD_BCRYPT);
@@ -62,6 +69,7 @@ class UserManager
         }
     }
 
+    // zmeni profilovy obrazek uzivatele
     public function updateProfilePic(int $user_id, string $profile_pic_path): bool
     {
         try {
@@ -75,6 +83,7 @@ class UserManager
         }
     }
 
+    // vrati uzivatele podle emailu
     public function getUserByEmail(string $email): array|bool
     {
         return Db::query('
@@ -82,6 +91,7 @@ class UserManager
         ', [$email], true);
     }
 
+    // vlozi noveho uzivatele
     public function createUser(string $username, string $nickname, string $email, string $password): bool|array
     {
         try {
@@ -99,6 +109,7 @@ class UserManager
         }
     }
 
+    // zmeni roli uzivatele
     public function changeUserRole(int $user_id, string $user_role): bool
     {
         try {
@@ -110,6 +121,7 @@ class UserManager
         }
     }
 
+    // zmeni status uzivatele (schvaleno/neschvaleno)
     public function toggleStatus(int $user_id, string $user_status): bool
     {
         try {
@@ -121,6 +133,7 @@ class UserManager
         }
     }
 
+    // vrati uzivatele podle roli
     public function getUsersByRole(string $role): array
     {
         return Db::query('

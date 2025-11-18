@@ -1,3 +1,5 @@
+{# Template - /articles - autorovy články #}
+
 {% extends 'layout.twig' %}
 
 {% block content %}
@@ -18,7 +20,7 @@
 
     <div>
         <section class="container mx-auto px-4 py-8">
-            <!-- Hlavicka -->
+            <!-- Hlavička -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
                     <h1 class="text-3xl font-bold">Moje články</h1>
@@ -57,7 +59,7 @@
                 </a>
             </div>
 
-            <!-- Seznam clanku -->
+            <!-- Seznam článků -->
             <div class="space-y-8" id="articlesContainer">
                 {% for article in articles %}
                     <div class="card bg-base-100 shadow-xl article-card" data-status="{{ article.status }}"
@@ -73,6 +75,7 @@
                                                 {{ article.nazev_clanku }}
                                             </h2>
 
+                                            <!-- Status -->
                                             {% if article.status == 'prijato' %}
                                                 <div class="badge badge-success gap-1">
                                                     <i data-lucide="check" class="w-3 h-3"></i>
@@ -94,13 +97,15 @@
                                     </div>
 
                                     <div class="flex gap-2">
-                                        <button class="btn btn-sm btn-outline gap-1 flex-1 lg:flex-none edit-article-btn"
-                                                data-article-id="{{ article.clanek_id }}"
-                                                data-title="{{ article.title }}"
-                                                data-abstract="{{ article.abstract }}">
-                                            <i data-lucide="edit" class="w-4 h-4"></i>
-                                            Upravit
-                                        </button>
+                                        {% if article.status != 'prijato' %}
+                                            <button class="btn btn-sm btn-outline gap-1 flex-1 lg:flex-none edit-article-btn"
+                                                    data-article-id="{{ article.clanek_id }}"
+                                                    data-title="{{ article.title }}"
+                                                    data-abstract="{{ article.abstract }}">
+                                                <i data-lucide="edit" class="w-4 h-4"></i>
+                                                Upravit
+                                            </button>
+                                        {% endif %}
                                         <button class="btn btn-sm btn-error btn-outline gap-1 flex-1 lg:flex-none delete-article-btn"
                                                 data-article-id="{{ article.clanek_id }}">
                                             <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -113,7 +118,7 @@
                                         {{ article.abstrakt }}
                                     </p>
 
-                                    <!-- Metadata -->
+                                    <!-- Datum a PDF odkaz -->
                                     <div class="flex flex-wrap gap-4 text-sm">
                                         <div class="flex items-center gap-1 opacity-70">
                                             <i data-lucide="calendar" class="w-4 h-4"></i>

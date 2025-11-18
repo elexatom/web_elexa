@@ -1,5 +1,4 @@
-// JS script pro registracni formular
-
+// zpracovani hesla
 const pwd = document.getElementById("password")
 const confirmPwd = document.getElementById("confirmPassword")
 const toggle = document.getElementById("togglePassword")
@@ -77,6 +76,7 @@ function checkConfirmMatch() {
     }
 }
 
+// funkce pro validaci formulare
 function validate() {
     if (confCheck && reqCheck) document.querySelector("button[type='submit']").disabled = false
 }
@@ -94,7 +94,7 @@ pwd.addEventListener("input", () => {
 confirmPwd.addEventListener("input", ()=>{
     checkConfirmMatch()
     validate()
-}) // overit shodu hesel
+})
 
 // toggle viditelnosti hesla
 toggle.addEventListener("click", () => {

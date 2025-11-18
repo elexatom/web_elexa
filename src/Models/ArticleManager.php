@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
@@ -9,6 +10,7 @@ use PDOException;
  */
 class ArticleManager
 {
+    // vrati vsechny clanky
     public function getAllArticles(): array
     {
         return Db::query('
@@ -16,6 +18,7 @@ class ArticleManager
         ');
     }
 
+    // vrati vsechny prijate clanky
     public function getAllAcceptedArticles(): array
     {
         return Db::query('
@@ -23,6 +26,7 @@ class ArticleManager
         ', ['prijato']);
     }
 
+    // vrati clanky uzivatele dle ID
     public function getAllArticlesByAuthor(int $author_id): array
     {
         return Db::query('
@@ -30,6 +34,7 @@ class ArticleManager
         ', [$author_id]);
     }
 
+    // vlozi novy clanek
     public function createArticle(string $title, string $abstract, string $publish_date, int $author_id, string $pdf_route): bool
     {
         try {
@@ -45,6 +50,7 @@ class ArticleManager
         }
     }
 
+    // upravi clanek dle ID
     public function editArticle(string $title, string $abstract, int $article_id): bool
     {
         try {
@@ -60,6 +66,7 @@ class ArticleManager
         }
     }
 
+    // smaze clanek dle ID
     public function deleteArticle(string $article_id): bool
     {
         try {
@@ -75,6 +82,7 @@ class ArticleManager
         }
     }
 
+    // nastavi status clanku dle ID
     public function setArticleStatus(string $article_id, string $status): bool
     {
         try {

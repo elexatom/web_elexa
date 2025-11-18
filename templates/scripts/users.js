@@ -1,4 +1,6 @@
-// Toast notifikace
+// ------------------------------------------------------- //
+//  ---------------- Toast notifikace -------------------- //
+// ------------------------------------------------------- //
 function showToast(message, type = "success") {
     const $toast = $("#messageToast")
     const $text = $("#messageText")
@@ -37,7 +39,9 @@ function showToast(message, type = "success") {
         })
 }
 
-// AJAX helper
+// ------------------------------------------------------- //
+//  -------------------- AJAX helper --------------------- //
+// ------------------------------------------------------- //
 async function ajaxRequest(url, method, data) {
     try {
         const response = await $.ajax({
@@ -47,9 +51,10 @@ async function ajaxRequest(url, method, data) {
             dataType: "json"
         })
 
+        // odpoved
         showToast(response.message || "Operace proběhla úspěšně.", "success")
         return response
-    } catch (xhr) {
+    } catch (xhr) { // problem
         let res = {}
         try {
             res = xhr.responseJSON || JSON.parse(xhr.responseText)
@@ -62,14 +67,16 @@ async function ajaxRequest(url, method, data) {
     }
 }
 
-// Razeni tabulky
+// ------------------------------------------------------- //
+//  ------------ Razeni tabulky podle sloupcu ------------ //
+// ------------------------------------------------------- //
 let currentSort = {column: "userid", direction: "asc"}
 
 $(".sortable").on("click", function () {
     const $th = $(this)
     const column = $th.data("column")
 
-    // Prepnuti smeru razeni pokud je stejny sloupec
+    // prepnuti smeru razeni pokud je zvolen stejny sloupec
     if (currentSort.column === column) {
         currentSort.direction = currentSort.direction === "asc" ? "desc" : "asc"
     } else {
@@ -77,20 +84,22 @@ $(".sortable").on("click", function () {
         currentSort.direction = "asc"
     }
 
-    // Update ikon
+    // ikony
     $(".sortable .sort-icon").attr("data-lucide", "arrow-up-down")
     const icon = currentSort.direction === "asc" ? "arrow-up" : "arrow-down"
     $th.find(".sort-icon").attr("data-lucide", icon)
     lucide.createIcons()
 
-    // Seradit radky
+    // seradit tabulku
     sortTable(column, currentSort.direction)
 })
 
+// Seradit tabulku podle zadaneho sloupce a smeru
 function sortTable(column, direction) {
     const $tbody = $("#usersTableBody")
     const $rows = $tbody.find("tr").get()
 
+    // razeni
     $rows.sort(function (a, b) {
         let valA, valB
 
@@ -113,17 +122,19 @@ function sortTable(column, direction) {
         return 0
     })
 
-    // Prepsat tbody s serazenymi radky
+    // prepsat tbody se serazenymi radky
     $.each($rows, function (index, row) {
         $tbody.append(row)
     })
 }
 
-// Otevreni modalu s informacemi o uzivateli
+// ------------------------------------------------------- //
+// -------- Modal pro zobrazeni info o uzivateli --------- //
+// ------------------------------------------------------- //
 $(document).on("click", ".user-info-btn", function () {
     const $btn = $(this)
 
-    // Naplneni dat do modalu
+    // naplneni dat do modalu
     $("#modalProfilePic").attr("src", $btn.data("profile"))
     $("#modalName").text($btn.data("name"))
     $("#modalNick").text("@" + $btn.data("nick"))
@@ -132,51 +143,57 @@ $(document).on("click", ".user-info-btn", function () {
     $("#modalCreated").text(new Date($btn.data("created")).toLocaleDateString("cs-CZ"))
     $("#modalUserId").text($btn.data("user-id"))
 
-    // Obnoveni ikon
+    // ikony
     lucide.createIcons()
 
-    // Otevreni modalu
+    // otevreni modalu
     document.getElementById("userInfoModal").showModal()
 })
 
-// Zmena role uzivatele
+// ------------------------------------------------------- //
+// ---------------- Zmena role uzivatele ----------------- //
+// ------------------------------------------------------- //
 $(document).on("change", ".role-select", async function () {
     const $select = $(this)
     const userId = $select.data("user-id")
     const newRole = $select.val()
     const originalRole = $select.data("original-role")
 
+    // ajax request
     const res = await ajaxRequest("/users/change-role", "POST", {
         user_id: userId,
         role: newRole
     })
 
-    if (res) {
-        // Aktualizace puvodni hodnoty
+    if (res) { // uspech
+        // aktualizace puvodni hodnoty
         $select.data("original-role", newRole)
-        // Aktualizace data atributu v radku
+        // aktualizace data atributu v radce
         $select.closest("tr").data("role", newRole)
     } else {
-        // Navrat na puvodni hodnotu pri chybe
+        // navrat na puvodni hodnotu pri chybe
         $select.val(originalRole)
     }
 })
 
-// Toggle schvaleno/neschvaleno
+// ------------------------------------------------------- //
+//  ------------ Zmena schvaleno/neschvaleno  ------------ //
+// ------------------------------------------------------- //
 $(document).on("click", ".status-toggle", async function () {
     const $btn = $(this)
     const userId = $btn.data("user-id")
     const isApproved = $btn.data("schvaleno") === 1
 
+    // ajax request
     const res = await ajaxRequest("/users/toggle-status", "POST", {
         user_id: userId,
         status: isApproved ? 0 : 1
     })
 
-    if (res) {
-        // Prepnuti UI
+    if (res) { // uspech
+        // zmena v UI
         if (isApproved) {
-            // Zmenit na neschvaleno
+            // zmenit na neschvaleno
             $btn
                 .removeClass("btn-success")
                 .addClass("btn-error")
@@ -184,7 +201,7 @@ $(document).on("click", ".status-toggle", async function () {
                 .html("<i data-lucide=\"x-circle\" class=\"w-4 h-4\"></i> Neschváleno")
             $btn.closest("tr").data("schvaleno", 0)
         } else {
-            // Zmenit na schvaleno
+            // zmenit na schvaleno
             $btn
                 .removeClass("btn-error")
                 .addClass("btn-success")
@@ -193,12 +210,12 @@ $(document).on("click", ".status-toggle", async function () {
             $btn.closest("tr").data("schvaleno", 1)
         }
 
-        // Obnovit ikony
+        // ikony
         lucide.createIcons()
     }
 })
 
-// Inicializace ikon pri nacteni
+// inicializace ikon pri nacteni
 $(document).ready(function () {
     lucide.createIcons()
 })

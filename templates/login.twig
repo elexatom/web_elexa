@@ -1,3 +1,5 @@
+{# Template - /auth/login - prihlasovaci stranka #}
+
 {% extends 'layout_auth.twig' %}
 
 {% block content %}
@@ -29,7 +31,8 @@
                 <button class="btn btn-primary w-full mt-5 text-white" type="submit">Odeslat</button>
             </form>
 
-            <p class="text-sm mt-4">Nemáte účet?
+            <p class="text-sm mt-4">
+                Nemáte účet?
                 <a href="/auth/register" class="link link-primary">Registrace</a>
             </p>
         </div>

@@ -1,7 +1,11 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controllers;
 
+/**
+ * Controller pro autorizaci uživatelů (přihlášení, registrace, odhlášení)
+ */
 class AuthCtrl extends Controller
 {
     public function process(array $params): void
@@ -15,20 +19,22 @@ class AuthCtrl extends Controller
             }
         }
 
-        if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') { // uzivatel se chce prihlasit
+        // prihlaseni uzivatele
+        if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
                 $this->redirect('/');
             }
 
-            $email = $_POST["email"] ?? '';
+            $email_raw = $_POST["email"] ?? '';
+            $email = filter_var($email_raw, FILTER_VALIDATE_EMAIL);
             $password = $_POST["password"] ?? '';
 
             $user = $this->userManager->getUserByEmail($email); // ziskat data o uzivateli
 
             if ($user['schvaleno'] === 0) { // ucet ceka na schvaleni, redir. informacni stranka
                 $this->redirect('/auth/welcome');
-            } elseif ($user && password_verify($password, $user['heslo'])) { // overit credentials
-                session_regenerate_id(); // obnovit session id - session spoofing
+            } elseif ($user && password_verify($password, $user['heslo'])) { // overit udaje
+                session_regenerate_id(); // obnovit session id - session hijacking
                 $_SESSION['user'] = $user; // nastavit session flags
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['user_id'] = $user['userid'];
@@ -40,21 +46,25 @@ class AuthCtrl extends Controller
             }
         }
 
-        if ($action === 'logout') { // uzivatel se chce odhlasit
-            unset($_SESSION['user']); // smazat flag
-            $_SESSION['loggedin'] = false;
+        // odhlaseni uzivatele
+        if ($action === 'logout') {
+            session_unset();
+            session_regenerate_id(true);
             session_destroy(); // znicit session a presmerovat na home
             $this->redirect('/');
         }
 
+        // registrace uzivatele
         if ($action === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST') $this->handleRegister();
 
-        if (isset($_SESSION['error'])) $this->data['error'] = $_SESSION['error']; // aby nedoslo k form resubmitu
+        // preserve zpravy - aby nedoslo k form resubmitu
+        if (isset($_SESSION['error'])) $this->data['error'] = $_SESSION['error'];
 
-        $this->header['title'] = "Auth";
+        $this->header['title'] = "Auth | DigiArch";
         $this->view = $action;
     }
 
+    // registrace uzivatele
     public function handleRegister(): void
     {
         $nickname = trim($_POST['nick'] ?? '');
@@ -110,9 +120,10 @@ class AuthCtrl extends Controller
             return;
         }
 
+        // zapis v db
         $user_account = $this->userManager->createUser($username, $nickname, $email, $password);
-        print_r($user_account);
-        if (empty($user_account)) {
+
+        if (empty($user_account)) { // kontrola duplicity uctu
             $this->data = [
                 'errors' => ["Tento účet již existuje."],
             ];

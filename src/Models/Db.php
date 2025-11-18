@@ -1,13 +1,18 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
 use PDO;
 
+/**
+ * Databaze
+ */
 class Db
 {
     private static PDO $connection;
 
+    // PDO nastaveni
     private static array $settings = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
@@ -25,14 +30,9 @@ class Db
 
     public static function query(string $sql, array $params = [], bool $onlyOne = false): array|bool
     {
+        // vykonani dotazu
         $output = self::$connection->prepare($sql);
         $output->execute($params);
-        return $onlyOne ? $output->fetch() : $output->fetchAll();
-    }
-
-
-    public static function database(): PDO
-    {
-        return self::$connection;
+        return $onlyOne ? $output->fetch() : $output->fetchAll(); // vrati jeden nebo vsechny vysledky
     }
 }
