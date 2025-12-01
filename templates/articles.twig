@@ -286,8 +286,7 @@
                                                                 </div>
                                                                 {% if review.komentar %}
                                                                     <div class="mt-2 pt-2 border-t border-base-300">
-                                                                        <p class="text-xs italic opacity-70">
-                                                                            "{{ review.komentar }}"</p>
+                                                                        {{ review.komentar|raw }}
                                                                     </div>
                                                                 {% endif %}
                                                             </div>

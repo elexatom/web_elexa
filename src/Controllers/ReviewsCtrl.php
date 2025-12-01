@@ -58,6 +58,9 @@ class ReviewsCtrl extends Controller
 
         $komentar = trim($_POST['komentar'] ?? '');
 
+        $allowed = '<p><b><strong><i><em><u><ul><ol><li><br>';
+        $komentar = strip_tags($komentar, $allowed);
+
         // validace dat
         if (empty($article_id) || empty($review_id) || empty($komentar) || $catg1 < 1 || $catg2 < 1 || $catg3 < 1 || $catg4 < 1) {
             $this->jsonResponse(['success' => false, 'message' => 'Neplatné data.'], 400);
